@@ -1,65 +1,46 @@
 # EcoTwin Frontend
 
 ## Project
+React-based dashboard for the EcoTwin urban traffic and carbon dispersal simulation.
 
-EcoTwin is a Digital Twin traffic-control system that uses Reinforcement Learning to optimize urban traffic while considering carbon emissions.
-
-## Frontend Role
-
-The frontend provides a real-time cityscape dashboard for visualizing the EcoTwin simulation.
-
-### Dashboard Responsibilities
-
+## Frontend Responsibilities
 - Display the simulated city grid
 - Visualize vehicle positions
 - Display traffic-light states
-- Visualize carbon/CO₂ concentration
-- Display traffic and environmental metrics
+- Visualize CO₂/carbon concentration
+- Display live traffic and environmental metrics
 - Display simulation status
-- Display Reinforcement Learning information
-- Provide live visualization through WebSockets
+- Integrate live data through WebSockets
 
 ## Technology
-
 - React
 - Vite
 - JavaScript
 - Deck.gl / Leaflet
 - WebSockets
 
+## Day 1 Progress
+- React + Vite application initialized
+- EcoTwin dashboard layout created
+- Live Metrics section added
+- City Simulation section added
+- Base city-grid scaffold created
+- Simulation Status section added
+- Frontend structure organized
+
 ## Development Plan
 
-### Week 1 — Map Scaffolding
+### Week 1
+React application and base city-map scaffolding.
 
-- Initialize React application
-- Create dashboard layout
-- Set up base city-grid view
-- Prepare mapping integration
+### Week 2
+WebSocket integration and live vehicle visualization.
 
-### Week 2 — Live Render
+### Week 3
+Dynamic CO₂/carbon heatmap.
 
-- Connect to WebSocket data
-- Render live vehicle coordinates
-- Display moving vehicle markers
+### Week 4
+Live CO₂, average wait-time metrics and analytics charts.
 
-### Week 3 — Heatmap
-
-- Add dynamic carbon concentration heatmap
-- Visualize pollution hotspots
-
-### Week 4 — Analytics
-
-- Add live CO₂ metrics
-- Add average waiting-time metrics
-- Add charts and dashboard refinements
-
-## Current Progress
-
-### Day 1
-
-- React/Vite application initialized
-- EcoTwin dashboard foundation created
-- Live metrics section created
-- City simulation section created
-- Base city-grid scaffold created
-- Simulation status section created
+## Current Status
+Day 1 - Frontend dashboard foundation completed.
