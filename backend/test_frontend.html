@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EcoTwin WebSocket Test</title>
+</head>
+<body>
+
+    <h1>EcoTwin Traffic Data</h1>
+
+    <pre id="output">Connecting...</pre>
+
+    <script>
+        const output = document.getElementById("output");
+
+        const websocket = new WebSocket(
+            "ws://127.0.0.1:8000/ws/traffic"
+        );
+
+        websocket.onopen = function() {
+            output.textContent = "Connected!\n\n";
+        };
+
+        websocket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+
+            output.textContent +=
+                JSON.stringify(data, null, 2) + "\n\n";
+        };
+
+        websocket.onerror = function() {
+            output.textContent += "\nWebSocket error!";
+        };
+
+        websocket.onclose = function() {
+            output.textContent += "\nConnection closed.";
+        };
+    </script>
+
+</body>
+</html>
