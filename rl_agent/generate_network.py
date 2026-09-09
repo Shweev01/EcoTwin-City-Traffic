@@ -29,4 +29,23 @@ def build_grid_network(out_prefix: str, grid_size: int, edge_len: int = 200):
     ]
     subprocess.run(cmd, check=True)
     return net_file
+
+
+def build_demand(out_prefix: str, net_file: str, sim_time: int, period: float):
+    """Uses randomTrips.py (ships with SUMO) to create a believable rush-hour-ish demand."""
+    random_trips = os.path.join(sumo_home(), "tools", "randomTrips.py")
+    rou_file = f"{out_prefix}.rou.xml"
+    trips_file = f"{out_prefix}.trips.xml"
+    cmd = [
+        sys.executable, random_trips,
+        "-n", net_file,
+        "-o", trips_file,
+        "-r", rou_file,
+        "-e", str(sim_time),
+        "-p", str(period),              # avg seconds between vehicle insertions
+        "--fringe-factor", "5",         # bias demand towards edge-of-grid entry/exit
+        "--validate",
+    ]
+    subprocess.run(cmd, check=True)
+    return rou_file
  
