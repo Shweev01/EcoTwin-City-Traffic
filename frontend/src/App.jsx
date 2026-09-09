@@ -1,78 +1,126 @@
+import { useEffect, useState } from "react";
+import CityMap from "./components/CityMap";
+import { connectWebSocket } from "./services/websocket";
 import "./App.css";
 
 function App() {
+  const [simulationData, setSimulationData] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState("Connecting...");
+
+  useEffect(() => {
+    const websocket = connectWebSocket(
+      (data) => {
+        console.log("Received simulation data:", data);
+        setSimulationData(data);
+        setConnectionStatus("Simulation Live");
+      },
+      () => {
+        setConnectionStatus("WebSocket Error");
+      },
+      () => {
+        setConnectionStatus("Disconnected");
+      }
+    );
+
+    return () => {
+      websocket.close();
+    };
+  }, []);
+
+  const vehicles = simulationData?.vehicles || [];
+  const trafficLights = simulationData?.traffic_lights || [];
+  const metrics = simulationData?.metrics;
+
   return (
-    <div className="dashboard">
+    <div className="app">
+      {/* Header */}
       <header className="header">
         <div>
           <h1>EcoTwin</h1>
           <p>Reinforcement Learning for Urban Carbon Dispersal</p>
         </div>
 
-        <div className="status">
+        <div className="simulation-status">
           <span className="status-dot"></span>
-          Simulation Offline
+          {connectionStatus}
         </div>
       </header>
 
-      <main className="dashboard-content">
+      {/* Main Dashboard */}
+      <main className="dashboard">
 
+        {/* Sidebar */}
         <aside className="sidebar">
           <h2>Live Metrics</h2>
 
           <div className="metric-card">
             <span>Vehicles</span>
-            <strong>--</strong>
+            <strong>{metrics?.vehicle_count ?? "--"}</strong>
           </div>
 
           <div className="metric-card">
             <span>Total CO₂</span>
-            <strong>--</strong>
+            <strong>
+              {metrics?.total_co2?.toFixed(2) ?? "--"}
+            </strong>
           </div>
 
           <div className="metric-card">
             <span>Average Wait Time</span>
-            <strong>--</strong>
+            <strong>
+              {metrics?.average_wait_time?.toFixed(2) ?? "--"}
+            </strong>
           </div>
 
           <div className="metric-card">
             <span>Traffic Status</span>
-            <strong>Waiting</strong>
+            <strong>
+              {trafficLights.length > 0
+                ? trafficLights[0].state
+                : "--"}
+            </strong>
           </div>
         </aside>
 
-        <section className="map-section">
-          <div className="map-header">
-            <h2>City Simulation</h2>
-            <span>Live Map</span>
+        {/* City Simulation */}
+        <section className="simulation-panel">
+          <div className="section-header">
+            <div>
+              <h2>City Simulation</h2>
+              <p>
+                Live traffic and carbon dispersal visualization
+              </p>
+            </div>
+
+            <span className="live-badge">LIVE MAP</span>
           </div>
 
           <div className="map-container">
-            <div className="city-grid">
-              <div className="road horizontal road-1"></div>
-              <div className="road horizontal road-2"></div>
-              <div className="road horizontal road-3"></div>
-
-              <div className="road vertical road-4"></div>
-              <div className="road vertical road-5"></div>
-              <div className="road vertical road-6"></div>
-            </div>
-
-            <div className="map-message">
-              <h3>EcoTwin City Grid</h3>
-              <p>Live simulation data will appear here.</p>
-            </div>
+            <CityMap
+              vehicles={vehicles}
+              trafficLights={trafficLights}
+            />
           </div>
+
+          {/* Simulation Status */}
+          <div className="simulation-info">
+  <h3>Simulation Status</h3>
+
+  <p>
+    {simulationData
+      ? `Simulation time: ${simulationData.timestamp}`
+      : "Waiting for simulation and WebSocket data..."}
+  </p>
+
+  {simulationData && (
+    <p>
+      Live updates received every second
+    </p>
+  )}
+</div>
         </section>
 
       </main>
-
-      <section className="bottom-panel">
-        <h2>Simulation Status</h2>
-        <p>
-          Waiting for simulation and WebSocket data...
-        </p>
-      </section>
     </div>
   );
 }
