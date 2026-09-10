@@ -1,46 +1,40 @@
 # EcoTwin Frontend
 
 ## Project
+
 React-based dashboard for the EcoTwin urban traffic and carbon dispersal simulation.
 
+The frontend visualizes live simulation data received through the FastAPI WebSocket backend.
+
 ## Frontend Responsibilities
+
 - Display the simulated city grid
-- Visualize vehicle positions
+- Visualize live vehicle positions
 - Display traffic-light states
 - Visualize CO₂/carbon concentration
 - Display live traffic and environmental metrics
 - Display simulation status
-- Integrate live data through WebSockets
+- Integrate live simulation data through WebSockets
 
 ## Technology
+
 - React
 - Vite
 - JavaScript
-- Deck.gl / Leaflet
+- Leaflet
+- React-Leaflet
 - WebSockets
 
-## Day 1 Progress
-- React + Vite application initialized
-- EcoTwin dashboard layout created
-- Live Metrics section added
-- City Simulation section added
-- Base city-grid scaffold created
-- Simulation Status section added
-- Frontend structure organized
+## Frontend Structure
 
-## Development Plan
-
-### Week 1
-React application and base city-map scaffolding.
-
-### Week 2
-WebSocket integration and live vehicle visualization.
-
-### Week 3
-Dynamic CO₂/carbon heatmap.
-
-### Week 4
-Live CO₂, average wait-time metrics and analytics charts.
-
-## Current Status
-Day 1 - Frontend dashboard foundation completed.
+```text
+src/
+├── components/
+│   └── CityMap.jsx
+├── services/
+│   ├── websocket.js
+│   └── simulationData.js
+├── App.jsx
+├── App.css
+├── index.css
+└── main.jsx

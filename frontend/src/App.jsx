@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import CityMap from "./components/CityMap";
 import { connectWebSocket } from "./services/websocket";
 import "./App.css";
+import { normalizeSimulationData } from "./services/simulationData";
 
 function App() {
   const [simulationData, setSimulationData] = useState(null);
@@ -11,8 +12,11 @@ function App() {
     const websocket = connectWebSocket(
       (data) => {
         console.log("Received simulation data:", data);
-        setSimulationData(data);
-        setConnectionStatus("Simulation Live");
+
+  const normalizedData = normalizeSimulationData(data);
+
+  setSimulationData(normalizedData);
+  setConnectionStatus("Simulation Live");
       },
       () => {
         setConnectionStatus("WebSocket Error");
@@ -28,28 +32,26 @@ function App() {
   }, []);
 
   const vehicles = simulationData?.vehicles || [];
-  const trafficLights = simulationData?.traffic_lights || [];
+  const trafficLights = simulationData?.trafficLights || [];
   const metrics = simulationData?.metrics;
 
   return (
     <div className="app">
-      {/* Header */}
       <header className="header">
         <div>
           <h1>EcoTwin</h1>
           <p>Reinforcement Learning for Urban Carbon Dispersal</p>
         </div>
 
-        <div className="simulation-status">
-          <span className="status-dot"></span>
-          {connectionStatus}
-        </div>
+        <div className={`simulation-status ${connectionStatus
+  .toLowerCase()
+  .replace(" ", "-")}`}>
+  <span className="status-dot"></span>
+  {connectionStatus}
+</div>
       </header>
 
-      {/* Main Dashboard */}
       <main className="dashboard">
-
-        {/* Sidebar */}
         <aside className="sidebar">
           <h2>Live Metrics</h2>
 
@@ -61,15 +63,21 @@ function App() {
           <div className="metric-card">
             <span>Total CO₂</span>
             <strong>
-              {metrics?.total_co2?.toFixed(2) ?? "--"}
+              {metrics?.total_co2 != null
+                ? metrics.total_co2.toFixed(2)
+                : "--"}
             </strong>
+            <small>simulation value</small>
           </div>
 
           <div className="metric-card">
             <span>Average Wait Time</span>
             <strong>
-              {metrics?.average_wait_time?.toFixed(2) ?? "--"}
+              {metrics?.average_wait_time != null
+                ? metrics.average_wait_time.toFixed(2)
+                : "--"}
             </strong>
+            <small>seconds</small>
           </div>
 
           <div className="metric-card">
@@ -82,7 +90,6 @@ function App() {
           </div>
         </aside>
 
-        {/* City Simulation */}
         <section className="simulation-panel">
           <div className="section-header">
             <div>
@@ -102,24 +109,20 @@ function App() {
             />
           </div>
 
-          {/* Simulation Status */}
           <div className="simulation-info">
-  <h3>Simulation Status</h3>
+            <h3>Simulation Status</h3>
 
-  <p>
-    {simulationData
-      ? `Simulation time: ${simulationData.timestamp}`
-      : "Waiting for simulation and WebSocket data..."}
-  </p>
+            <p>
+              {simulationData
+                ? `Simulation time: ${simulationData.timestamp}`
+                : "Waiting for simulation and WebSocket data..."}
+            </p>
 
-  {simulationData && (
-    <p>
-      Live updates received every second
-    </p>
-  )}
-</div>
+            {simulationData && (
+              <p>Live updates received every second</p>
+            )}
+          </div>
         </section>
-
       </main>
     </div>
   );
