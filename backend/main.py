@@ -3,8 +3,19 @@ import asyncio
 from fastapi import FastAPI, WebSocket
 from pydantic import BaseModel
 from mock_sumo import generate_simulation_data
+from fastapi.middleware.cors import CORSMiddleware
 
 app= FastAPI()
+app.add_middleware(
+    CORSMiddleware, 
+    allow_origins=["*"], 
+    allow_methods=["*"], 
+    allow_headers=["*"]
+)
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 class Vehicle(BaseModel):
     id: str
@@ -35,6 +46,13 @@ class SimulationUpdate(BaseModel):
     traffic_lights: list[TrafficLight]
     emissions: list[Emission]
     metrics: Metrics
+
+@app.get("/api/simulation/state", response_model=SimulationUpdate)
+def get_simulation_state():
+    timestamp = 0.0
+    data = generate_simulation_data(timestamp)
+    simulation_update = SimulationUpdate(**data)
+    return simulation_update
 
 @app.websocket("/ws/traffic")
 async def traffic_websocket(websocket: WebSocket):
