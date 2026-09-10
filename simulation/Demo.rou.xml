@@ -1,60 +1,14 @@
-"""
-EcoTwin mini-demo: a small SUMO city (3x3 grid, 5 signalized intersections)
-with vehicles moving, traffic lights cycling, and live CO2 emissions readout.
+<?xml version="1.0" encoding="UTF-8"?>
+<routes>
+    <vType id="passenger" vClass="passenger" accel="2.6" decel="4.5" sigma="0.5" length="5" maxSpeed="13.89" guiShape="passenger"/>
 
-This is the smallest possible version of what your Week 2 Gym environment
-will wrap -- run this first to *see* the raw pieces (cars, lights, emissions)
-before you touch RLlib.
+    <route id="west_to_east" edges="A0A1 A1A2 A2B2 B2C2"/>
+    <route id="east_to_west" edges="C2B2 B2A2 A2A1 A1A0"/>
+    <route id="north_to_south" edges="A0B0 B0C0 C0C1"/>
+    <route id="south_to_north" edges="C1B1 B1A1 A1A2"/>
 
-Two ways to run it:
-
-  1. WITH the SUMO GUI (recommended first run -- you SEE cars and lights):
-        python run_demo.py --gui
-
-  2. Headless, printing live stats to the terminal (what your env.py does):
-        python run_demo.py
-"""
-import argparse
-import os
-import sys
-
-if "SUMO_HOME" in os.environ:
-    sys.path.append(os.path.join(os.environ["SUMO_HOME"], "tools"))
-else:
-    sys.exit("SUMO_HOME is not set. See the README for setup steps.")
-
-import traci  # noqa: E402
-
-
-def run(use_gui: bool, steps: int):
-    binary = "sumo-gui" if use_gui else "sumo"
-    traci.start([binary, "-c", "demo.sumocfg"])
-
-    tls_ids = traci.trafficlight.getIDList()
-    print(f"Loaded network with {len(tls_ids)} signalized intersections: {list(tls_ids)}")
-
-    for step in range(steps):
-        traci.simulationStep()
-
-        if step % 20 == 0:  # print a status line every 20 sim-seconds
-            vehicle_ids = traci.vehicle.getIDList()
-            total_co2 = sum(traci.vehicle.getCO2Emission(v) for v in vehicle_ids)
-            total_waiting = sum(traci.vehicle.getWaitingTime(v) for v in vehicle_ids)
-            light_states = {tls: traci.trafficlight.getPhase(tls) for tls in tls_ids}
-
-            print(
-                f"t={step:4d}s | vehicles={len(vehicle_ids):3d} | "
-                f"total CO2={total_co2:9.1f} mg/s | total waiting={total_waiting:7.1f}s | "
-                f"light phases={light_states}"
-            )
-
-    traci.close()
-    print("Simulation finished.")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--gui", action="store_true", help="open the SUMO GUI to watch it visually")
-    parser.add_argument("--steps", type=int, default=600, help="simulated seconds to run")
-    args = parser.parse_args()
-    run(args.gui, args.steps)
+    <flow id="westbound" type="passenger" route="west_to_east" begin="0" end="540" period="8"/>
+    <flow id="northbound" type="passenger" route="north_to_south" begin="1" end="540" period="10"/>
+    <flow id="eastbound" type="passenger" route="east_to_west" begin="3" end="540" period="9"/>
+    <flow id="southbound" type="passenger" route="south_to_north" begin="5" end="540" period="11"/>
+</routes>
