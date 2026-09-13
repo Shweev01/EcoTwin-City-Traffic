@@ -1,40 +1,17 @@
-# EcoTwin Frontend
+## Backend Integration
 
-## Project
+The React dashboard is prepared to receive live simulation data through
+the FastAPI WebSocket endpoint:
 
-React-based dashboard for the EcoTwin urban traffic and carbon dispersal simulation.
+`ws://127.0.0.1:8000/ws/traffic`
 
-The frontend visualizes live simulation data received through the FastAPI WebSocket backend.
+Expected simulation data includes:
 
-## Frontend Responsibilities
+- Vehicle ID, X/Y coordinates, speed, and waiting time
+- Traffic-light ID, state, and phase
+- CO₂ emission values with X/Y coordinates
+- Total CO₂, average waiting time, and vehicle count
 
-- Display the simulated city grid
-- Visualize live vehicle positions
-- Display traffic-light states
-- Visualize CO₂/carbon concentration
-- Display live traffic and environmental metrics
-- Display simulation status
-- Integrate live simulation data through WebSockets
-
-## Technology
-
-- React
-- Vite
-- JavaScript
-- Leaflet
-- React-Leaflet
-- WebSockets
-
-## Frontend Structure
-
-```text
-src/
-├── components/
-│   └── CityMap.jsx
-├── services/
-│   ├── websocket.js
-│   └── simulationData.js
-├── App.jsx
-├── App.css
-├── index.css
-└── main.jsx
+The frontend currently uses the agreed data structure and is ready for
+integration with the real SUMO/TraCI simulation once the backend replaces
+the mock simulation data.
