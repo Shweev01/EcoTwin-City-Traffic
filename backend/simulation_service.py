@@ -27,5 +27,25 @@ class SimulationService:
             config_file
         ])
 
+    def get_vehicles(self):
+        vehicles = []
+
+        vehicle_ids = traci.vehicle.getIDList()
+
+        for vehicle_id in vehicle_ids:
+            x, y = traci.vehicle.getPosition(vehicle_id)
+            speed = traci.vehicle.getSpeed(vehicle_id)
+            waiting_time = traci.vehicle.getWaitingTime(vehicle_id)
+
+            vehicles.append({
+                "id": vehicle_id,
+                "x": x,
+                "y": y,
+                "speed": speed,
+                "waiting_time": waiting_time
+            })
+
+        return vehicles
+
     def stop(self):
         traci.close()
