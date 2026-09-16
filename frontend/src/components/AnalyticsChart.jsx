@@ -29,7 +29,7 @@ function AnalyticsChart({ data = [] }) {
             data={data}
             margin={{
               top: 10,
-              right: 20,
+              right: 30,
               left: 10,
               bottom: 10,
             }}
@@ -45,13 +45,32 @@ function AnalyticsChart({ data = [] }) {
               }}
             />
 
-            <YAxis />
+            {/* CO₂ axis */}
+            <YAxis
+              yAxisId="co2"
+              label={{
+                value: "Total CO₂",
+                angle: -90,
+                position: "insideLeft",
+              }}
+            />
+
+            {/* Waiting-time axis */}
+            <YAxis
+              yAxisId="wait"
+              orientation="right"
+              label={{
+                value: "Wait Time (s)",
+                angle: 90,
+                position: "insideRight",
+              }}
+            />
 
             <Tooltip />
-
             <Legend />
 
             <Line
+              yAxisId="co2"
               type="monotone"
               dataKey="total_co2"
               name="Total CO₂"
@@ -61,6 +80,7 @@ function AnalyticsChart({ data = [] }) {
             />
 
             <Line
+              yAxisId="wait"
               type="monotone"
               dataKey="average_wait_time"
               name="Average Wait Time"
