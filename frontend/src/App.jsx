@@ -4,6 +4,7 @@ import AnalyticsChart from "./components/AnalyticsChart";
 import { connectWebSocket } from "./services/websocket";
 import { normalizeSimulationData } from "./services/simulationData";
 import "./App.css";
+import VehicleTable from "./components/VehicleTable";
 
 function App() {
   const [simulationData, setSimulationData] = useState(null);
@@ -164,36 +165,32 @@ function App() {
           </div>
 
           {/* SIMULATION OVERVIEW */}
+          
           <div className="simulation-overview">
-            <div className="overview-item">
-              <span>Simulation Time</span>
+  <div className="overview-item">
+    <span>Simulation Time</span>
+    <strong>{simulationData?.timestamp ?? "--"}</strong>
+  </div>
 
-              <strong>
-                {simulationData?.timestamp ?? "--"}
-              </strong>
-            </div>
+  <div className="overview-item">
+    <span>Vehicles</span>
+    <strong>{vehicles.length}</strong>
+  </div>
 
-            <div className="overview-item">
-              <span>Vehicles</span>
+  <div className="overview-item">
+    <span>Emission Points</span>
+    <strong>{emissions.length}</strong>
+  </div>
 
-              <strong>{vehicles.length}</strong>
-            </div>
+  <div className="overview-item">
+    <span>Traffic Lights</span>
+    <strong>{trafficLights.length}</strong>
+  </div>
+</div>
 
-            <div className="overview-item">
-              <span>Emission Points</span>
+<VehicleTable vehicles={vehicles} />
 
-              <strong>{emissions.length}</strong>
-            </div>
-
-            <div className="overview-item">
-              <span>Traffic Lights</span>
-
-              <strong>{trafficLights.length}</strong>
-            </div>
-          </div>
-
-          {/* ANALYTICS */}
-          <AnalyticsChart data={analyticsData} />
+<AnalyticsChart data={analyticsData} />
 
           {/* SIMULATION STATUS */}
           <div className="simulation-info">
