@@ -77,9 +77,19 @@ function CityMap({
     return "blue";
   };
 
+  // TraCI may return values such as:
+  // "G", "Y", "r", "GrGr", "GrrG", etc.
   const getTrafficLightColor = (state) => {
-    if (state === "G") return "green";
-    if (state === "Y") return "orange";
+    const signalState = String(state || "").toUpperCase();
+
+    if (signalState.includes("G")) {
+      return "green";
+    }
+
+    if (signalState.includes("Y")) {
+      return "orange";
+    }
+
     return "red";
   };
 
@@ -275,7 +285,7 @@ function CityMap({
         );
       })}
 
-      {/* Traffic lights */}
+      {/* Real-time traffic lights */}
       {trafficLights.map((light) => {
         const lightPosition =
           light.x != null && light.y != null
