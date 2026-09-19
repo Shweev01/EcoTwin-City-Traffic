@@ -15,22 +15,16 @@ function MapUpdater({ vehicles = [], emissions = [] }) {
   const hasFittedMap = useRef(false);
 
   useEffect(() => {
-    if (hasFittedMap.current) {
-      return;
-    }
+    if (hasFittedMap.current) return;
 
     const points = [
       ...vehicles
-        .filter(
-          (vehicle) => vehicle.x != null && vehicle.y != null
-        )
-        .map((vehicle) => [vehicle.y, vehicle.x]),
+        .filter((v) => v.x != null && v.y != null)
+        .map((v) => [v.y, v.x]),
 
       ...emissions
-        .filter(
-          (emission) => emission.x != null && emission.y != null
-        )
-        .map((emission) => [emission.y, emission.x]),
+        .filter((e) => e.x != null && e.y != null)
+        .map((e) => [e.y, e.x]),
     ];
 
     if (points.length > 0) {
@@ -56,43 +50,14 @@ function CityMap({
     [420, 420],
   ];
 
-  // --------------------------------------------------
-  // CITY ROAD NETWORK
-  // --------------------------------------------------
-
   const roads = [
-    // Horizontal roads
-    [
-      [70, 0],
-      [70, 420],
-    ],
-    [
-      [210, 0],
-      [210, 420],
-    ],
-    [
-      [350, 0],
-      [350, 420],
-    ],
-
-    // Vertical roads
-    [
-      [0, 70],
-      [420, 70],
-    ],
-    [
-      [0, 210],
-      [420, 210],
-    ],
-    [
-      [0, 350],
-      [420, 350],
-    ],
+    [[70, 0], [70, 420]],
+    [[210, 0], [210, 420]],
+    [[350, 0], [350, 420]],
+    [[0, 70], [420, 70]],
+    [[0, 210], [420, 210]],
+    [[0, 350], [420, 350]],
   ];
-
-  // --------------------------------------------------
-  // INTERSECTIONS
-  // --------------------------------------------------
 
   const intersections = [
     [70, 70],
@@ -106,19 +71,11 @@ function CityMap({
     [350, 350],
   ];
 
-  // --------------------------------------------------
-  // VEHICLE COLORS
-  // --------------------------------------------------
-
   const getVehicleColor = (speed) => {
     if (speed === 0) return "red";
     if (speed < 5) return "orange";
     return "blue";
   };
-
-  // --------------------------------------------------
-  // TRAFFIC LIGHT COLORS
-  // --------------------------------------------------
 
   const getTrafficLightColor = (state) => {
     if (state === "G") return "green";
@@ -126,38 +83,33 @@ function CityMap({
     return "red";
   };
 
-  // --------------------------------------------------
-  // CO₂ POLLUTION INTENSITY
-  // --------------------------------------------------
-
+  // CO₂ intensity based on real emission values
   const getEmissionStyle = (co2) => {
-    if (co2 >= 120) {
-      return {
-        radius: 24,
-        fillOpacity: 0.5,
-        weight: 2,
-      };
-    }
-
     if (co2 >= 80) {
       return {
-        radius: 18,
-        fillOpacity: 0.4,
-        weight: 1.5,
+        intensity: "High",
+        color: "red",
+        radius: 28,
+        fillOpacity: 0.55,
+        weight: 2,
       };
     }
 
     if (co2 >= 40) {
       return {
-        radius: 13,
-        fillOpacity: 0.3,
-        weight: 1,
+        intensity: "Moderate",
+        color: "orange",
+        radius: 22,
+        fillOpacity: 0.45,
+        weight: 1.5,
       };
     }
 
     return {
-      radius: 8,
-      fillOpacity: 0.2,
+      intensity: "Low",
+      color: "green",
+      radius: 16,
+      fillOpacity: 0.35,
       weight: 1,
     };
   };
@@ -176,7 +128,7 @@ function CityMap({
         emissions={emissions}
       />
 
-      {/* CITY BOUNDARY */}
+      {/* City boundary */}
       <Rectangle
         bounds={mapBounds}
         pathOptions={{
@@ -186,10 +138,7 @@ function CityMap({
         }}
       />
 
-      {/* --------------------------------------------------
-          ROAD NETWORK
-      -------------------------------------------------- */}
-
+      {/* Roads */}
       {roads.map((road, index) => (
         <Polyline
           key={`road-${index}`}
@@ -216,10 +165,7 @@ function CityMap({
         />
       ))}
 
-      {/* --------------------------------------------------
-          INTERSECTIONS
-      -------------------------------------------------- */}
-
+      {/* Intersections */}
       {intersections.map((intersection, index) => (
         <CircleMarker
           key={`intersection-${index}`}
@@ -236,24 +182,24 @@ function CityMap({
           }}
         >
           <Popup>
-            <strong>Intersection J{index + 1}</strong>
+            <strong>
+              Intersection J{index + 1}
+            </strong>
             <br />
             City traffic junction
           </Popup>
         </CircleMarker>
       ))}
 
-      {/* --------------------------------------------------
-          VEHICLES
-      -------------------------------------------------- */}
-
+      {/* Live vehicles */}
       {vehicles.map((vehicle) => {
-        if (
-          vehicle.x == null ||
-          vehicle.y == null
-        ) {
+        if (vehicle.x == null || vehicle.y == null) {
           return null;
         }
+
+        const vehicleColor = getVehicleColor(
+          Number(vehicle.speed)
+        );
 
         return (
           <CircleMarker
@@ -264,12 +210,8 @@ function CityMap({
             ]}
             radius={6}
             pathOptions={{
-              color: getVehicleColor(
-                vehicle.speed
-              ),
-              fillColor: getVehicleColor(
-                vehicle.speed
-              ),
+              color: vehicleColor,
+              fillColor: vehicleColor,
               fillOpacity: 0.9,
             }}
           >
@@ -278,22 +220,17 @@ function CityMap({
                 Vehicle {vehicle.id}
               </strong>
               <br />
-              Speed: {vehicle.speed}
+              Speed:{" "}
+              {Number(vehicle.speed).toFixed(2)} m/s
               <br />
               Waiting Time:{" "}
-              {vehicle.waiting_time}
-              <br />
-              CO₂:{" "}
-              {vehicle.co2 ?? "--"}
+              {Number(vehicle.waiting_time).toFixed(2)} s
             </Popup>
           </CircleMarker>
         );
       })}
 
-      {/* --------------------------------------------------
-          CO₂ POLLUTION ZONES
-      -------------------------------------------------- */}
-
+      {/* Real-time CO₂ pollution points */}
       {emissions.map((emission, index) => {
         if (
           emission.x == null ||
@@ -302,10 +239,8 @@ function CityMap({
           return null;
         }
 
-        const emissionStyle =
-          getEmissionStyle(
-            Number(emission.co2) || 0
-          );
+        const co2 = Number(emission.co2) || 0;
+        const emissionStyle = getEmissionStyle(co2);
 
         return (
           <CircleMarker
@@ -314,44 +249,41 @@ function CityMap({
               emission.y,
               emission.x,
             ]}
-            radius={
-              emissionStyle.radius
-            }
+            radius={emissionStyle.radius}
             pathOptions={{
-              color: "red",
-              fillColor: "red",
+              color: emissionStyle.color,
+              fillColor: emissionStyle.color,
               fillOpacity:
                 emissionStyle.fillOpacity,
-              weight:
-                emissionStyle.weight,
+              weight: emissionStyle.weight,
             }}
           >
             <Popup>
               <strong>
-                CO₂ Pollution Hotspot
+                CO₂ Pollution Point
               </strong>
               <br />
-              CO₂ Level: {emission.co2}
+              X: {Number(emission.x).toFixed(2)}
+              <br />
+              Y: {Number(emission.y).toFixed(2)}
+              <br />
+              CO₂: {co2.toFixed(2)}
+              <br />
+              Intensity: {emissionStyle.intensity}
             </Popup>
           </CircleMarker>
         );
       })}
 
-      {/* --------------------------------------------------
-          TRAFFIC LIGHTS
-      -------------------------------------------------- */}
-
+      {/* Traffic lights */}
       {trafficLights.map((light) => {
         const lightPosition =
-          light.x != null &&
-          light.y != null
+          light.x != null && light.y != null
             ? [light.y, light.x]
             : [100, 150];
 
         const lightColor =
-          getTrafficLightColor(
-            light.state
-          );
+          getTrafficLightColor(light.state);
 
         return (
           <CircleMarker
@@ -378,10 +310,7 @@ function CityMap({
         );
       })}
 
-      {/* --------------------------------------------------
-          MAP LEGEND
-      -------------------------------------------------- */}
-
+      {/* Map legend */}
       <div
         className="map-legend"
         style={{
@@ -414,19 +343,16 @@ function CityMap({
         <hr
           style={{
             border: "none",
-            borderTop:
-              "1px solid #ddd",
+            borderTop: "1px solid #ddd",
             margin: "8px 0",
           }}
         />
 
-        <strong>
-          CO₂ Intensity
-        </strong>
+        <strong>CO₂ Intensity</strong>
 
-        <div>🟢 Low</div>
-        <div>🟡 Moderate</div>
-        <div>🔴 High</div>
+        <div>🟢 Low (&lt; 40)</div>
+        <div>🟠 Moderate (40–79.99)</div>
+        <div>🔴 High (≥ 80)</div>
       </div>
     </MapContainer>
   );
