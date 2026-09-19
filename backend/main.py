@@ -56,13 +56,15 @@ def get_simulation_state():
     try:
         traci.simulationStep()
         vehicles = simulation_service.get_vehicles()
+        traffic_lights = simulation_service.get_traffic_lights()
+        emissions = simulation_service.get_emissions()
 
         data = {
             "type": "simulation_update",
             "timestamp": 0.0,
             "vehicles": vehicles,
-            "traffic_lights": [],
-            "emissions": [],
+            "traffic_lights": traffic_lights,
+            "emissions": emissions,
             "metrics": {
                 "total_co2": 0.0,
                 "average_wait_time": 0.0,
@@ -88,13 +90,15 @@ async def traffic_websocket(websocket: WebSocket):
         while True:
             traci.simulationStep()
             vehicles = simulation_service.get_vehicles()
+            traffic_lights = simulation_service.get_traffic_lights()
+            emissions = simulation_service.get_emissions()
 
             data = {
                 "type" : "simulation_update",
                 "timestamp" : timestamp,
                 "vehicles" : vehicles,
-                "traffic_lights": [],
-                "emissions": [],
+                "traffic_lights": traffic_lights,
+                "emissions": emissions,
                 "metrics": {
                     "total_co2": 0.0,
                     "average_wait_time": 0.0,

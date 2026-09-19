@@ -47,5 +47,38 @@ class SimulationService:
 
         return vehicles
 
+    def get_traffic_lights(self):
+        traffic_lights = []
+
+        traffic_light_ids = traci.trafficlight.getIDList()
+
+        for traffic_light_id in traffic_light_ids:
+            state = traci.trafficlight.getRedYellowGreenState(traffic_light_id)
+            phase = traci.trafficlight.getPhase(traffic_light_id)
+
+            traffic_lights.append({
+            "id": traffic_light_id,
+            "state": state,
+            "phase": phase
+            })
+
+        return traffic_lights
+
+    def get_emissions(self):
+        emissions = []
+        vehicle_ids = traci.vehicle.getIDList()
+
+        for vehicle_id in vehicle_ids:
+            x,y = traci.vehicle.getPosition(vehicle_id)
+            co2 = traci.vehicle.getCO2Emission(vehicle_id)
+
+            emissions.append({
+                "x": x,
+                "y": y,
+                "co2": co2
+            })
+
+        return emissions
+
     def stop(self):
         traci.close()
