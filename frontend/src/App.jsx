@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import CityMap from "./components/CityMap";
 import AnalyticsChart from "./components/AnalyticsChart";
+import VehicleTable from "./components/VehicleTable";
 import { connectWebSocket } from "./services/websocket";
 import { normalizeSimulationData } from "./services/simulationData";
 import "./App.css";
-import VehicleTable from "./components/VehicleTable";
 
 function App() {
   const [simulationData, setSimulationData] = useState(null);
-  const [connectionStatus, setConnectionStatus] = useState("Connecting...");
+  const [connectionStatus, setConnectionStatus] =
+    useState("Connecting...");
   const [analyticsData, setAnalyticsData] = useState([]);
 
   useEffect(() => {
@@ -31,6 +32,7 @@ function App() {
 
           const updatedData = [...previousData, newPoint];
 
+          // Keep only the latest 30 points
           return updatedData.slice(-30);
         });
       },
@@ -52,110 +54,132 @@ function App() {
   const emissions = simulationData?.emissions || [];
   const metrics = simulationData?.metrics;
 
+  /*
+   * Real SUMO/TraCI traffic-light states can contain
+   * multiple characters, for example "GrGr".
+   */
   const currentTrafficState =
     trafficLights.length > 0 ? trafficLights[0].state : null;
 
-  const trafficStatus =
-    currentTrafficState === "G"
-      ? "Green"
-      : currentTrafficState === "Y"
-      ? "Yellow"
-      : currentTrafficState === "R"
-      ? "Red"
-      : "--";
+  const getTrafficStatus = (state) => {
+    const signalState = String(state || "").toUpperCase();
+
+    if (!signalState) return "--";
+
+    if (signalState.includes("Y")) return "Yellow";
+    if (signalState.includes("G")) return "Green";
+    if (signalState.includes("R")) return "Red";
+
+    return "--";
+  };
+
+  const trafficStatus = getTrafficStatus(currentTrafficState);
 
   return (
     <div className="app">
-      {/* HEADER */}
-      <header className="header">
+
+      {/* Header */}
+      <header className="app-header">
         <div>
           <h1>EcoTwin</h1>
           <p>Reinforcement Learning for Urban Carbon Dispersal</p>
         </div>
 
-        <div
-          className={`simulation-status ${connectionStatus
-            .toLowerCase()
-            .replace(" ", "-")}`}
-        >
-          <span className="status-dot"></span>
-          {connectionStatus}
+        <div className="connection-status">
+          <span
+            className={
+              connectionStatus === "Simulation Live"
+                ? "status-dot status-live"
+                : "status-dot"
+            }
+          ></span>
+
+          <span>{connectionStatus}</span>
         </div>
       </header>
 
+      {/* Main Dashboard */}
       <main className="dashboard">
-        {/* SIDEBAR */}
-        <aside className="sidebar">
-          <h2>Live Metrics</h2>
 
-          {/* VEHICLES */}
+        {/* Live Metrics */}
+        <section className="metrics-grid">
+
           <div className="metric-card">
-            <span>Vehicles</span>
+            <div className="metric-label">
+              Vehicles
+            </div>
 
-            <strong>
-              {metrics?.vehicle_count ?? "--"}
-            </strong>
+            <div className="metric-value">
+              {metrics?.vehicle_count ?? vehicles.length}
+            </div>
 
-            <small>active vehicles</small>
+            <div className="metric-subtitle">
+              Active vehicles
+            </div>
           </div>
 
-          {/* CO₂ */}
           <div className="metric-card">
-            <span>Total CO₂</span>
+            <div className="metric-label">
+              Total CO₂
+            </div>
 
-            <strong>
-              {metrics?.total_co2 != null
-                ? `${metrics.total_co2.toFixed(2)}`
-                : "--"}
-            </strong>
+            <div className="metric-value">
+              {Number(metrics?.total_co2 ?? 0).toFixed(2)}
+            </div>
 
-            <small>simulation value</small>
+            <div className="metric-subtitle">
+              Real-time emission level
+            </div>
           </div>
 
-          {/* WAIT TIME */}
           <div className="metric-card">
-            <span>Average Wait Time</span>
+            <div className="metric-label">
+              Average Wait Time
+            </div>
 
-            <strong>
-              {metrics?.average_wait_time != null
-                ? `${metrics.average_wait_time.toFixed(2)} s`
-                : "--"}
-            </strong>
+            <div className="metric-value">
+              {Number(metrics?.average_wait_time ?? 0).toFixed(2)}
+            </div>
 
-            <small>average vehicle waiting</small>
+            <div className="metric-subtitle">
+              Average vehicle waiting time
+            </div>
           </div>
 
-          {/* TRAFFIC STATUS */}
           <div className="metric-card">
-            <span>Traffic Status</span>
+            <div className="metric-label">
+              Traffic Status
+            </div>
 
-            <strong>{trafficStatus}</strong>
+            <div className="metric-value">
+              {trafficStatus}
+            </div>
 
-            <small>
-              {trafficLights.length > 0
-                ? `Signal ${trafficLights[0].id}`
-                : "current signal state"}
-            </small>
+            <div className="metric-subtitle">
+              Current signal state
+            </div>
           </div>
-        </aside>
 
-        {/* MAIN SIMULATION PANEL */}
-        <section className="simulation-panel">
+        </section>
+
+        {/* City Simulation */}
+        <section className="simulation-section">
+
           <div className="section-header">
             <div>
               <h2>City Simulation</h2>
 
               <p>
-                Live traffic and carbon dispersal visualization
+                Live traffic and carbon simulation from SUMO
               </p>
             </div>
 
-            <span className="live-badge">
-              LIVE MAP
-            </span>
+            <div className="simulation-time">
+              Simulation Time:{" "}
+              {simulationData?.timestamp ?? "--"}
+            </div>
           </div>
 
-          {/* MAP */}
           <div className="map-container">
             <CityMap
               vehicles={vehicles}
@@ -164,51 +188,14 @@ function App() {
             />
           </div>
 
-          {/* SIMULATION OVERVIEW */}
-          
-          <div className="simulation-overview">
-  <div className="overview-item">
-    <span>Simulation Time</span>
-    <strong>{simulationData?.timestamp ?? "--"}</strong>
-  </div>
-
-  <div className="overview-item">
-    <span>Vehicles</span>
-    <strong>{vehicles.length}</strong>
-  </div>
-
-  <div className="overview-item">
-    <span>Emission Points</span>
-    <strong>{emissions.length}</strong>
-  </div>
-
-  <div className="overview-item">
-    <span>Traffic Lights</span>
-    <strong>{trafficLights.length}</strong>
-  </div>
-</div>
-
-<VehicleTable vehicles={vehicles} />
-
-<AnalyticsChart data={analyticsData} />
-
-          {/* SIMULATION STATUS */}
-          <div className="simulation-info">
-            <h3>Simulation Status</h3>
-
-            <p>
-              {simulationData
-                ? `Simulation time: ${simulationData.timestamp}`
-                : "Waiting for simulation and WebSocket data..."}
-            </p>
-
-            {simulationData && (
-              <p>
-                Live updates received every second
-              </p>
-            )}
-          </div>
         </section>
+
+        {/* Live Vehicle Data */}
+        <VehicleTable vehicles={vehicles} />
+
+        {/* Analytics */}
+        <AnalyticsChart data={analyticsData} />
+
       </main>
     </div>
   );
