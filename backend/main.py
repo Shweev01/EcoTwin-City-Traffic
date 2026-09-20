@@ -55,19 +55,23 @@ def get_simulation_state():
 
     try:
         traci.simulationStep()
+        timestamp = traci.simulation.getTime()
         vehicles = simulation_service.get_vehicles()
         traffic_lights = simulation_service.get_traffic_lights()
         emissions = simulation_service.get_emissions()
 
+        total_co2 = sum(emission["co2"] for emission in emissions)
+        average_wait_time = sum(vehicle["waiting_time"] for vehicle in vehicles) / len(vehicles) if vehicles else 0.0
+
         data = {
             "type": "simulation_update",
-            "timestamp": 0.0,
+            "timestamp": timestamp,
             "vehicles": vehicles,
             "traffic_lights": traffic_lights,
             "emissions": emissions,
             "metrics": {
-                "total_co2": 0.0,
-                "average_wait_time": 0.0,
+                "total_co2": total_co2,
+                "average_wait_time": average_wait_time,
                 "vehicle_count": len(vehicles)
             }
         }
@@ -84,14 +88,16 @@ async def traffic_websocket(websocket: WebSocket):
     simulation_service = SimulationService()
     simulation_service.start()
 
-    timestamp = 0.0
-
     try:
         while True:
             traci.simulationStep()
+            timestamp = traci.simulation.getTime()
             vehicles = simulation_service.get_vehicles()
             traffic_lights = simulation_service.get_traffic_lights()
             emissions = simulation_service.get_emissions()
+
+            total_co2 = sum(emission["co2"] for emission in emissions)
+            average_wait_time = sum(vehicle["waiting_time"] for vehicle in vehicles) / len(vehicles) if vehicles else 0.0
 
             data = {
                 "type" : "simulation_update",
@@ -100,8 +106,8 @@ async def traffic_websocket(websocket: WebSocket):
                 "traffic_lights": traffic_lights,
                 "emissions": emissions,
                 "metrics": {
-                    "total_co2": 0.0,
-                    "average_wait_time": 0.0,
+                    "total_co2": total_co2,
+                    "average_wait_time": average_wait_time,
                     "vehicle_count": len(vehicles)
                 }
             }
@@ -109,8 +115,6 @@ async def traffic_websocket(websocket: WebSocket):
             simulation_update = SimulationUpdate(**data)
 
             await websocket.send_json(simulation_update.model_dump())
-
-            timestamp += 1.0
 
             await asyncio.sleep(1)
 
