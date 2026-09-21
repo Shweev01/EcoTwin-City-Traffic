@@ -88,35 +88,59 @@ async def traffic_websocket(websocket: WebSocket):
     simulation_service = SimulationService()
     simulation_service.start()
 
+    last_broadcast_time = 0.0
+    broadcast_interval = 0.5
+    next_step_time = asyncio.get_running_loop().time()
+
     try:
         while True:
             traci.simulationStep()
-            timestamp = traci.simulation.getTime()
-            vehicles = simulation_service.get_vehicles()
-            traffic_lights = simulation_service.get_traffic_lights()
-            emissions = simulation_service.get_emissions()
 
-            total_co2 = sum(emission["co2"] for emission in emissions)
-            average_wait_time = sum(vehicle["waiting_time"] for vehicle in vehicles) / len(vehicles) if vehicles else 0.0
+            current_time = traci.simulation.getTime()
 
-            data = {
-                "type" : "simulation_update",
-                "timestamp" : timestamp,
-                "vehicles" : vehicles,
-                "traffic_lights": traffic_lights,
-                "emissions": emissions,
-                "metrics": {
-                    "total_co2": total_co2,
-                    "average_wait_time": average_wait_time,
-                    "vehicle_count": len(vehicles)
+            if current_time - last_broadcast_time >= broadcast_interval:
+                last_broadcast_time = current_time
+
+                vehicles = simulation_service.get_vehicles()
+                traffic_lights = simulation_service.get_traffic_lights()
+                emissions = simulation_service.get_emissions()
+
+                total_co2 = sum(
+                    emission["co2"] for emission in emissions
+                )
+
+                average_wait_time = (
+                    sum(vehicle["waiting_time"] for vehicle in vehicles)
+                    / len(vehicles)
+                    if vehicles
+                    else 0.0
+                )
+
+                data = {
+                    "type": "simulation_update",
+                    "timestamp": current_time,
+                    "vehicles": vehicles,
+                    "traffic_lights": traffic_lights,
+                    "emissions": emissions,
+                    "metrics": {
+                        "total_co2": total_co2,
+                        "average_wait_time": average_wait_time,
+                        "vehicle_count": len(vehicles)
+                    }
                 }
-            }
 
-            simulation_update = SimulationUpdate(**data)
+                simulation_update = SimulationUpdate(**data)
 
-            await websocket.send_json(simulation_update.model_dump())
+                await websocket.send_json(
+                    simulation_update.model_dump()
+                )
 
-            await asyncio.sleep(1)
+            next_step_time += 0.2
+
+            sleep_time = next_step_time - asyncio.get_running_loop().time()
+
+            if sleep_time > 0:
+                await asyncio.sleep(sleep_time)
 
     finally:
         simulation_service.stop()
