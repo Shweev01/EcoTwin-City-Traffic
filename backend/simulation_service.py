@@ -8,12 +8,20 @@ class SimulationService:
         if "SUMO_HOME" not in os.environ:
             raise RuntimeError("SUMO_HOME environment variable is not set.")
 
-        sumo_tools = os.path.join(os.environ["SUMO_HOME"], "tools")
+        sumo_tools = os.path.join(
+            os.environ["SUMO_HOME"],
+            "tools"
+        )
 
         if sumo_tools not in sys.path:
             sys.path.append(sumo_tools)
 
+        self.running = False
+
     def start(self):
+        if self.running:
+            return
+
         config_file = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
             "..",
@@ -26,6 +34,17 @@ class SimulationService:
             "-c",
             config_file
         ])
+
+        self.running = True
+
+    def step(self):
+        if not self.running:
+            raise RuntimeError("Simulation is not running.")
+
+        traci.simulationStep()
+
+    def get_time(self):
+        return traci.simulation.getTime()
 
     def get_vehicles(self):
         vehicles = []
@@ -53,23 +72,28 @@ class SimulationService:
         traffic_light_ids = traci.trafficlight.getIDList()
 
         for traffic_light_id in traffic_light_ids:
-            state = traci.trafficlight.getRedYellowGreenState(traffic_light_id)
-            phase = traci.trafficlight.getPhase(traffic_light_id)
+            state = traci.trafficlight.getRedYellowGreenState(
+                traffic_light_id
+            )
+            phase = traci.trafficlight.getPhase(
+                traffic_light_id
+            )
 
             traffic_lights.append({
-            "id": traffic_light_id,
-            "state": state,
-            "phase": phase
+                "id": traffic_light_id,
+                "state": state,
+                "phase": phase
             })
 
         return traffic_lights
 
     def get_emissions(self):
         emissions = []
+
         vehicle_ids = traci.vehicle.getIDList()
 
         for vehicle_id in vehicle_ids:
-            x,y = traci.vehicle.getPosition(vehicle_id)
+            x, y = traci.vehicle.getPosition(vehicle_id)
             co2 = traci.vehicle.getCO2Emission(vehicle_id)
 
             emissions.append({
@@ -81,4 +105,8 @@ class SimulationService:
         return emissions
 
     def stop(self):
+        if not self.running:
+            return
+
         traci.close()
+        self.running = False
