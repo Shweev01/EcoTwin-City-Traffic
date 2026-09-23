@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CityMap from "./components/CityMap";
 import AnalyticsChart from "./components/AnalyticsChart";
 import VehicleTable from "./components/VehicleTable";
@@ -11,6 +11,7 @@ function App() {
   const [connectionStatus, setConnectionStatus] =
     useState("Connecting...");
   const [analyticsData, setAnalyticsData] = useState([]);
+  const lastChartTimestampRef = useRef(null);
 
   useEffect(() => {
     const websocket = connectWebSocket(
@@ -22,19 +23,31 @@ function App() {
         setSimulationData(normalizedData);
         setConnectionStatus("Simulation Live");
 
-        setAnalyticsData((previousData) => {
-          const newPoint = {
-            time: normalizedData.timestamp,
-            total_co2: normalizedData.metrics?.total_co2 ?? 0,
-            average_wait_time:
-              normalizedData.metrics?.average_wait_time ?? 0,
-          };
+        const simulationTimestamp = Number(normalizedData.timestamp) || 0;
 
-          const updatedData = [...previousData, newPoint];
+const lastChartTimestamp = lastChartTimestampRef.current;
 
-          // Keep only the latest 30 points
-          return updatedData.slice(-30);
-        });
+const shouldUpdateChart =
+  lastChartTimestamp === null ||
+  simulationTimestamp < lastChartTimestamp ||
+  simulationTimestamp - lastChartTimestamp >= 0.5;
+
+if (shouldUpdateChart) {
+  lastChartTimestampRef.current = simulationTimestamp;
+
+  setAnalyticsData((previousData) => {
+    const newPoint = {
+      time: simulationTimestamp,
+      total_co2: normalizedData.metrics?.total_co2 ?? 0,
+      average_wait_time:
+        normalizedData.metrics?.average_wait_time ?? 0,
+    };
+
+    const updatedData = [...previousData, newPoint];
+
+    return updatedData.slice(-60);
+  });
+}
       },
 
       () => {
