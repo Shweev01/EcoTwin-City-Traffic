@@ -9,6 +9,8 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.heat";
+
 
 function MapUpdater({ vehicles = [], emissions = [] }) {
   const map = useMap();
@@ -39,6 +41,84 @@ function MapUpdater({ vehicles = [], emissions = [] }) {
 
   return null;
 }
+
+
+/*
+ * Dynamic CO₂ heatmap
+ *
+ * Uses the real emissions received from:
+ * SUMO → TraCI → FastAPI → WebSocket → React
+ */
+function PollutionHeatmap({ emissions = [] }) {
+  const map = useMap();
+  const heatLayerRef = useRef(null);
+
+  useEffect(() => {
+    if (!heatLayerRef.current) {
+      heatLayerRef.current = L.heatLayer([], {
+        radius: 35,
+        blur: 25,
+        maxZoom: 2,
+        minOpacity: 0.35,
+        max: 0.85,
+        gradient: {
+          0.2: "green",
+          0.45: "yellow",
+          0.7: "orange",
+          1.0: "red",
+        },
+      }).addTo(map);
+    }
+
+    const validEmissions = emissions.filter(
+      (emission) =>
+        emission.x != null &&
+        emission.y != null &&
+        Number(emission.co2) >= 0
+    );
+
+    if (validEmissions.length === 0) {
+      heatLayerRef.current.setLatLngs([]);
+      return;
+    }
+
+    const co2Values = validEmissions.map(
+      (emission) => Number(emission.co2) || 0
+    );
+
+    const maxCO2 = Math.max(...co2Values, 1);
+
+    const heatPoints = validEmissions.map((emission) => {
+      const co2 = Number(emission.co2) || 0;
+
+      /*
+       * Normalize CO₂ so the strongest current emission
+       * becomes the hottest point on the map.
+       */
+      const intensity = Math.min(co2 / maxCO2, 1);
+
+      return [
+        Number(emission.y),
+        Number(emission.x),
+        intensity,
+      ];
+    });
+
+    heatLayerRef.current.setLatLngs(heatPoints);
+  }, [map, emissions]);
+
+  useEffect(() => {
+    return () => {
+      if (heatLayerRef.current) {
+        map.removeLayer(heatLayerRef.current);
+        heatLayerRef.current = null;
+      }
+    };
+  }, [map]);
+
+  return null;
+}
+
 
 function CityMap({
   vehicles = [],
@@ -138,6 +218,8 @@ function CityMap({
         emissions={emissions}
       />
 
+      <PollutionHeatmap emissions={emissions} />
+
       {/* City boundary */}
       <Rectangle
         bounds={mapBounds}
@@ -203,7 +285,10 @@ function CityMap({
 
       {/* Live vehicles */}
       {vehicles.map((vehicle) => {
-        if (vehicle.x == null || vehicle.y == null) {
+        if (
+          vehicle.x == null ||
+          vehicle.y == null
+        ) {
           return null;
         }
 
@@ -240,7 +325,7 @@ function CityMap({
         );
       })}
 
-      {/* Real-time CO₂ pollution points */}
+      {/* Real-time CO₂ emission points */}
       {emissions.map((emission, index) => {
         if (
           emission.x == null ||
@@ -250,7 +335,8 @@ function CityMap({
         }
 
         const co2 = Number(emission.co2) || 0;
-        const emissionStyle = getEmissionStyle(co2);
+        const emissionStyle =
+          getEmissionStyle(co2);
 
         return (
           <CircleMarker
@@ -279,7 +365,8 @@ function CityMap({
               <br />
               CO₂: {co2.toFixed(2)}
               <br />
-              Intensity: {emissionStyle.intensity}
+              Intensity:{" "}
+              {emissionStyle.intensity}
             </Popup>
           </CircleMarker>
         );
@@ -288,7 +375,8 @@ function CityMap({
       {/* Real-time traffic lights */}
       {trafficLights.map((light) => {
         const lightPosition =
-          light.x != null && light.y != null
+          light.x != null &&
+          light.y != null
             ? [light.y, light.x]
             : [100, 150];
 
@@ -353,15 +441,36 @@ function CityMap({
         <hr
           style={{
             border: "none",
-            borderTop: "1px solid #ddd",
+            borderTop:
+              "1px solid #ddd",
             margin: "8px 0",
           }}
         />
 
-        <strong>CO₂ Intensity</strong>
+        <strong>
+          CO₂ Pollution Heatmap
+        </strong>
+
+        <div>🟢 Low</div>
+        <div>🟡 Moderate</div>
+        <div>🟠 Elevated</div>
+        <div>🔴 High</div>
+
+        <hr
+          style={{
+            border: "none",
+            borderTop:
+              "1px solid #ddd",
+            margin: "8px 0",
+          }}
+        />
+
+        <strong>CO₂ Point Intensity</strong>
 
         <div>🟢 Low (&lt; 40)</div>
-        <div>🟠 Moderate (40–79.99)</div>
+        <div>
+          🟠 Moderate (40–79.99)
+        </div>
         <div>🔴 High (≥ 80)</div>
       </div>
     </MapContainer>
