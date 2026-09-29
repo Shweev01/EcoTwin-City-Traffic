@@ -15,7 +15,10 @@ function AnalyticsChart({ data = [] }) {
       <div className="analytics-header">
         <div>
           <h3>Simulation Analytics</h3>
-          <p>Live CO₂ emissions and average waiting time</p>
+
+          <p>
+            Live CO₂ emissions, waiting time and vehicle count
+          </p>
         </div>
       </div>
 
@@ -66,9 +69,17 @@ function AnalyticsChart({ data = [] }) {
               }}
             />
 
+            {/* Vehicle-count axis */}
+            <YAxis
+              yAxisId="vehicles"
+              orientation="right"
+              hide={true}
+            />
+
             <Tooltip />
             <Legend />
 
+            {/* Total CO₂ */}
             <Line
               yAxisId="co2"
               type="monotone"
@@ -79,12 +90,24 @@ function AnalyticsChart({ data = [] }) {
               dot={false}
             />
 
+            {/* Average waiting time */}
             <Line
               yAxisId="wait"
               type="monotone"
               dataKey="average_wait_time"
               name="Average Wait Time"
               stroke="#f59e0b"
+              strokeWidth={2}
+              dot={false}
+            />
+
+            {/* Vehicle count */}
+            <Line
+              yAxisId="vehicles"
+              type="monotone"
+              dataKey="vehicle_count"
+              name="Vehicle Count"
+              stroke="#38bdf8"
               strokeWidth={2}
               dot={false}
             />

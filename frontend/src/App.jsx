@@ -23,31 +23,42 @@ function App() {
         setSimulationData(normalizedData);
         setConnectionStatus("Simulation Live");
 
-        const simulationTimestamp = Number(normalizedData.timestamp) || 0;
+        const simulationTimestamp =
+          Number(normalizedData.timestamp) || 0;
 
-const lastChartTimestamp = lastChartTimestampRef.current;
+        const lastChartTimestamp =
+          lastChartTimestampRef.current;
 
-const shouldUpdateChart =
-  lastChartTimestamp === null ||
-  simulationTimestamp < lastChartTimestamp ||
-  simulationTimestamp - lastChartTimestamp >= 0.5;
+        const shouldUpdateChart =
+          lastChartTimestamp === null ||
+          simulationTimestamp < lastChartTimestamp ||
+          simulationTimestamp - lastChartTimestamp >= 0.5;
 
-if (shouldUpdateChart) {
-  lastChartTimestampRef.current = simulationTimestamp;
+        if (shouldUpdateChart) {
+          lastChartTimestampRef.current =
+            simulationTimestamp;
 
-  setAnalyticsData((previousData) => {
-    const newPoint = {
-      time: simulationTimestamp,
-      total_co2: normalizedData.metrics?.total_co2 ?? 0,
-      average_wait_time:
-        normalizedData.metrics?.average_wait_time ?? 0,
-    };
+          setAnalyticsData((previousData) => {
+            const newPoint = {
+              time: simulationTimestamp,
+              total_co2:
+                normalizedData.metrics?.total_co2 ?? 0,
+              average_wait_time:
+                normalizedData.metrics?.average_wait_time ?? 0,
+              vehicle_count:
+                normalizedData.metrics?.vehicle_count ??
+                normalizedData.vehicles?.length ??
+                0,
+            };
 
-    const updatedData = [...previousData, newPoint];
+            const updatedData = [
+              ...previousData,
+              newPoint,
+            ];
 
-    return updatedData.slice(-60);
-  });
-}
+            return updatedData.slice(-60);
+          });
+        }
       },
 
       () => {
@@ -63,7 +74,8 @@ if (shouldUpdateChart) {
   }, []);
 
   const vehicles = simulationData?.vehicles || [];
-  const trafficLights = simulationData?.trafficLights || [];
+  const trafficLights =
+    simulationData?.trafficLights || [];
   const emissions = simulationData?.emissions || [];
   const metrics = simulationData?.metrics;
 
@@ -72,10 +84,13 @@ if (shouldUpdateChart) {
    * multiple characters, for example "GrGr".
    */
   const currentTrafficState =
-    trafficLights.length > 0 ? trafficLights[0].state : null;
+    trafficLights.length > 0
+      ? trafficLights[0].state
+      : null;
 
   const getTrafficStatus = (state) => {
-    const signalState = String(state || "").toUpperCase();
+    const signalState =
+      String(state || "").toUpperCase();
 
     if (!signalState) return "--";
 
@@ -86,7 +101,8 @@ if (shouldUpdateChart) {
     return "--";
   };
 
-  const trafficStatus = getTrafficStatus(currentTrafficState);
+  const trafficStatus =
+    getTrafficStatus(currentTrafficState);
 
   return (
     <div className="app">
@@ -95,7 +111,10 @@ if (shouldUpdateChart) {
       <header className="app-header">
         <div>
           <h1>EcoTwin</h1>
-          <p>Reinforcement Learning for Urban Carbon Dispersal</p>
+          <p>
+            Reinforcement Learning for Urban Carbon
+            Dispersal
+          </p>
         </div>
 
         <div className="connection-status">
@@ -123,7 +142,8 @@ if (shouldUpdateChart) {
             </div>
 
             <div className="metric-value">
-              {metrics?.vehicle_count ?? vehicles.length}
+              {metrics?.vehicle_count ??
+                vehicles.length}
             </div>
 
             <div className="metric-subtitle">
@@ -137,7 +157,9 @@ if (shouldUpdateChart) {
             </div>
 
             <div className="metric-value">
-              {Number(metrics?.total_co2 ?? 0).toFixed(2)}
+              {Number(
+                metrics?.total_co2 ?? 0
+              ).toFixed(2)}
             </div>
 
             <div className="metric-subtitle">
@@ -151,7 +173,9 @@ if (shouldUpdateChart) {
             </div>
 
             <div className="metric-value">
-              {Number(metrics?.average_wait_time ?? 0).toFixed(2)}
+              {Number(
+                metrics?.average_wait_time ?? 0
+              ).toFixed(2)}
             </div>
 
             <div className="metric-subtitle">
@@ -183,7 +207,8 @@ if (shouldUpdateChart) {
               <h2>City Simulation</h2>
 
               <p>
-                Live traffic and carbon simulation from SUMO
+                Live traffic and carbon simulation from
+                SUMO
               </p>
             </div>
 
