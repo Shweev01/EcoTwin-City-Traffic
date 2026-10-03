@@ -12,5 +12,5 @@ async def test_websocket():
 
 try:
     asyncio.run(test_websocket())
-except KeyboardInterrupt:
+except (KeyboardInterrupt, websockets.exceptions.ConnectionClosed):
     print("\nWebSocket test stopped by user.")

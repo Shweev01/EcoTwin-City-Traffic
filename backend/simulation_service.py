@@ -18,21 +18,26 @@ class SimulationService:
 
         self.running = False
 
+        self.config_file = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "..",
+        "simulation",
+        "demo.sumocfg.xml",
+    )
+
     def start(self):
         if self.running:
             return
 
-        config_file = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            "..",
-            "simulation",
-            "demo.sumocfg.xml",
-        )
+        if not os.path.exists(self.config_file):
+            raise FileNotFoundError(
+                f"SUMO configuration file not found: {self.config_file}"
+            )
 
         traci.start([
             "sumo",
             "-c",
-            config_file
+            self.config_file
         ])
 
         self.running = True
