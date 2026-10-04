@@ -115,3 +115,8 @@ class SimulationService:
 
         traci.close()
         self.running = False
+
+    def get_status(self):
+        return {
+            "running": self.running
+        }

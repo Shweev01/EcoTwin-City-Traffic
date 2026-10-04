@@ -11,6 +11,7 @@ from simulation_service import SimulationService
 simulation_service = SimulationService()
 
 connected_clients = set()
+websocket_connection_count = 0
 latest_update = None
 simulation_lock = asyncio.Lock()
 
@@ -171,6 +172,12 @@ app.add_middleware(
 def health():
     return {"status": "ok"}
 
+@app.get("/api/simulation/status")
+def get_simulation_status():
+    return {
+        "running": simulation_service.running,
+        "websocket_connections": websocket_connection_count
+    }
 
 @app.get(
     "/api/simulation/state",
@@ -189,9 +196,17 @@ async def get_simulation_state():
 @app.websocket("/ws/traffic")
 async def traffic_websocket(websocket: WebSocket):
 
+    global websocket_connection_count
+
     await websocket.accept()
 
     connected_clients.add(websocket)
+    websocket_connection_count += 1
+
+    print(
+        f"WebSocket connected. "
+        f"Active connections: {websocket_connection_count}"
+    )
 
     try:
 
@@ -211,4 +226,11 @@ async def traffic_websocket(websocket: WebSocket):
         print(f"WebSocket connection closed: {e}")
 
     finally:
+
         connected_clients.discard(websocket)
+        websocket_connection_count -= 1
+
+        print(
+            f"WebSocket disconnected. "
+            f"Active connections: {websocket_connection_count}"
+        )
