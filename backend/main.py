@@ -6,9 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from simulation_service import SimulationService
+from simulation_controller import SimulationController
 
 
 simulation_service = SimulationService()
+simulation_controller = SimulationController(simulation_service)
 
 connected_clients = set()
 websocket_connection_count = 0
@@ -96,7 +98,7 @@ async def simulation_loop():
 
         async with simulation_lock:
 
-            simulation_service.step()
+            simulation_controller.step()
 
             latest_update = build_simulation_update()
 
@@ -134,7 +136,7 @@ async def lifespan(app: FastAPI):
 
     global latest_update
 
-    simulation_service.start()
+    simulation_controller.start()
 
     async with simulation_lock:
         latest_update = build_simulation_update()
@@ -155,7 +157,7 @@ async def lifespan(app: FastAPI):
         except asyncio.CancelledError:
             pass
 
-        simulation_service.stop()
+        simulation_controller.stop()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -174,10 +176,43 @@ def health():
 
 @app.get("/api/simulation/status")
 def get_simulation_status():
+    status = simulation_controller.get_status()
+
     return {
-        "running": simulation_service.running,
+        **status,
         "websocket_connections": websocket_connection_count
     }
+
+@app.post("/api/simulation/pause")
+async def pause_simulation():
+
+    async with simulation_lock:
+        simulation_controller.pause()
+
+    return {
+        "message": "Simulation paused",
+        "status": simulation_controller.get_status()
+    }
+
+@app.post("/api/simulation/resume")
+async def resume_simulation():
+
+    async with simulation_lock:
+        simulation_controller.resume()
+
+    return {
+        "message": "Simulation resumed",
+        "status": simulation_controller.get_status()
+    }
+
+@app.post("/api/simulation/step")
+async def step_simulation():
+
+    async with simulation_lock:
+        simulation_controller.step_once()
+        update = build_simulation_update()
+
+    return update
 
 @app.get(
     "/api/simulation/state",
