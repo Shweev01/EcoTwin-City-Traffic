@@ -62,6 +62,9 @@ class SimulationController:
         if not self.simulation_service.running:
             raise RuntimeError("Simulation is not running.")
 
+        if action < 0:
+            raise ValueError("Action must be a non-negative integer.")
+
         traffic_light_ids = self.simulation_service.get_traffic_light_ids()
 
         if traffic_light_id not in traffic_light_ids:

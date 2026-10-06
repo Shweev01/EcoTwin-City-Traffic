@@ -1,16 +1,19 @@
 import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from simulation_service import SimulationService
 from simulation_controller import SimulationController
 
+from rl_interface import RLInterface
+
 
 simulation_service = SimulationService()
 simulation_controller = SimulationController(simulation_service)
+rl_interface = RLInterface(simulation_controller)
 
 connected_clients = set()
 websocket_connection_count = 0
@@ -220,17 +223,30 @@ async def step_simulation():
 @app.post("/api/simulation/action")
 async def apply_simulation_action(action: TrafficLightAction):
 
-    async with simulation_lock:
+    try:
+        async with simulation_lock:
 
-        result = simulation_controller.receive_action(
-            action.traffic_light_id,
-            action.action
+            result = simulation_controller.receive_action(
+                action.traffic_light_id,
+                action.action
+            )
+
+        return {
+            "message": "Action received",
+            "action": result
+        }
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
         )
 
-    return {
-        "message": "Action received",
-        "action": result
-    }
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
 
 @app.get(
     "/api/simulation/state",
