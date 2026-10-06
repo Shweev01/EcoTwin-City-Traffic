@@ -46,3 +46,12 @@ class SimulationController:
             "running": self.simulation_service.running,
             "paused": self.paused
         }
+
+    def receive_action(self, traffic_light_id: str, action: int):
+        if not self.simulation_service.running:
+            raise RuntimeError("Simulation is not running.")
+
+        return {
+            "traffic_light_id": traffic_light_id,
+            "action": action
+        }

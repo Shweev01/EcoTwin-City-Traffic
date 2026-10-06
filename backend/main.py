@@ -52,6 +52,9 @@ class SimulationUpdate(BaseModel):
     emissions: list[Emission]
     metrics: Metrics
 
+class TrafficLightAction(BaseModel):
+    traffic_light_id: str
+    action: int
 
 def build_simulation_update() -> SimulationUpdate:
 
@@ -213,6 +216,21 @@ async def step_simulation():
         update = build_simulation_update()
 
     return update
+
+@app.post("/api/simulation/action")
+async def apply_simulation_action(action: TrafficLightAction):
+
+    async with simulation_lock:
+
+        result = simulation_controller.receive_action(
+            action.traffic_light_id,
+            action.action
+        )
+
+    return {
+        "message": "Action received",
+        "action": result
+    }
 
 @app.get(
     "/api/simulation/state",
