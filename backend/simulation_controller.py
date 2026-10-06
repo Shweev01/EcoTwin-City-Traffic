@@ -47,9 +47,32 @@ class SimulationController:
             "paused": self.paused
         }
 
+    def get_state(self):
+        if not self.simulation_service.running:
+            raise RuntimeError("Simulation is not running.")
+
+        return {
+            "timestamp": self.simulation_service.get_time(),
+            "vehicles": self.simulation_service.get_vehicles(),
+            "traffic_lights": self.simulation_service.get_traffic_lights(),
+            "emissions": self.simulation_service.get_emissions()
+        }
+
     def receive_action(self, traffic_light_id: str, action: int):
         if not self.simulation_service.running:
             raise RuntimeError("Simulation is not running.")
+
+        traffic_light_ids = self.simulation_service.get_traffic_light_ids()
+
+        if traffic_light_id not in traffic_light_ids:
+            raise ValueError(
+                f"Traffic light '{traffic_light_id}' not found."
+            )
+
+        self.simulation_service.set_traffic_light_phase(
+            traffic_light_id,
+            action
+        )
 
         return {
             "traffic_light_id": traffic_light_id,

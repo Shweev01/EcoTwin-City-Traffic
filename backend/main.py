@@ -245,6 +245,12 @@ async def get_simulation_state():
 
         return latest_update
 
+@app.get("/api/simulation/controller-state")
+async def get_controller_state():
+
+    async with simulation_lock:
+
+        return simulation_controller.get_state()
 
 @app.websocket("/ws/traffic")
 async def traffic_websocket(websocket: WebSocket):

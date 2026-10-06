@@ -120,3 +120,13 @@ class SimulationService:
         return {
             "running": self.running
         }
+
+    def get_traffic_light_ids(self):
+        return list(traci.trafficlight.getIDList())
+
+
+    def set_traffic_light_phase(self, traffic_light_id: str, phase: int):
+        traci.trafficlight.setPhase(
+            traffic_light_id,
+            phase
+        )
