@@ -1,140 +1,251 @@
-# EcoTwin Backend API
+# EcoTwin City Traffic — Backend
 
-Backend communication layer for the EcoTwin traffic simulation system.
+A real-time traffic simulation backend built with **FastAPI, SUMO, TraCI, WebSockets, and Pydantic**.
 
-The backend is built with **FastAPI** and provides REST APIs and WebSocket communication for exchanging real-time simulation data between **SUMO, the future RL component, and the React dashboard**.
+The backend connects the SUMO traffic simulation with the application layer and provides simulation data, traffic-light control, live WebSocket updates, and a structured Python interface for reinforcement-learning integration.
 
 ---
 
-## 1. Current Architecture
+# 1. Overview
 
-The backend now uses a real SUMO simulation through TraCI.
+The EcoTwin backend acts as the communication layer between the **SUMO traffic simulation** and the application.
 
-```text
-                    SUMO
-                     ↕
-                   TraCI
-                     ↕
-              SimulationService
-                     ↕
-               FastAPI Backend
-                /            \
-               /              \
-              ↓                ↓
-        REST API          WebSocket
-              │                │
-              ↓                ↓
-     Current Snapshot     Live Updates
-                                │
-                                ↓
-                         React Dashboard
-```
+It is responsible for:
 
-The backend acts as the communication layer between the SUMO simulation and the React dashboard.
+* Starting and managing the SUMO simulation
+* Communicating with SUMO through TraCI
+* Collecting vehicle information
+* Collecting traffic-light information
+* Collecting CO₂ emission data
+* Calculating simulation metrics
+* Controlling traffic-light phases
+* Providing REST APIs
+* Streaming real-time simulation updates through WebSockets
+* Validating API and simulation data using Pydantic
+* Providing structured state and action interfaces for RL integration
 
-The planned complete architecture will additionally connect the RL component:
+### Backend Flow
 
 ```text
-                 ┌─────────────┐
-                 │    SUMO     │
-                 └──────┬──────┘
-                        ↕
-                      TraCI
-                        ↕
-                 ┌─────────────┐
-                 │   FastAPI   │
-                 │   Backend   │
-                 └──────┬──────┘
-                    ↙        ↘
-                  RL          React
-             Algorithm      Dashboard
-                  │
-                Actions
-                  │
-                  ↓
-                 SUMO
+SUMO
+  ↕
+TraCI
+  ↕
+SimulationService
+  ↕
+SimulationController
+  ↕
+FastAPI
+ ├── REST API
+ ├── WebSocket
+ └── RLInterface
 ```
 
 ---
 
-## 2. Technology Stack
+# 2. Technology Stack
 
-* Python 3.11
-* FastAPI
-* Uvicorn
-* Pydantic
-* WebSockets
-* CORS
-* Eclipse SUMO
-* TraCI
-* React
-* Vite
-* Leaflet
-* React-Leaflet
-* Recharts
+| Technology  | Purpose                     |
+| ----------- | --------------------------- |
+| Python 3.11 | Backend development         |
+| FastAPI     | REST API framework          |
+| Uvicorn     | ASGI server                 |
+| SUMO        | Traffic simulation          |
+| TraCI       | SUMO communication/control  |
+| WebSockets  | Real-time data streaming    |
+| Pydantic    | Data validation and schemas |
+| Conda       | Environment management      |
 
-The backend environment uses:
+---
+
+# 3. Project Structure
 
 ```text
-Conda environment: ecotwin-api
-Python: 3.11.16
-SUMO: Eclipse SUMO 1.27.1
+backend/
+│
+├── main.py
+├── simulation_service.py
+├── simulation_controller.py
+├── rl_interface.py
+├── requirements.txt
+├── README.md
+│
+├── benchmark_websocket.py
+├── mock_sumo.py
+├── test_frontend.html
+└── test_websocekt.py
+```
+
+### Core Backend Files
+
+#### `main.py`
+
+Main FastAPI application.
+
+Responsible for:
+
+* Creating the FastAPI application
+* Configuring CORS
+* Initializing backend services
+* Defining REST endpoints
+* Managing WebSocket connections
+* Connecting the API layer with the simulation controller
+
+#### `simulation_service.py`
+
+Handles direct communication with SUMO through TraCI.
+
+Responsible for:
+
+* Starting SUMO
+* Stopping SUMO
+* Advancing simulation steps
+* Reading simulation time
+* Reading vehicle data
+* Reading traffic-light data
+* Controlling traffic-light phases
+* Reading lane-level metrics
+* Reading CO₂ emissions
+
+#### `simulation_controller.py`
+
+Acts as the control layer between FastAPI and `SimulationService`.
+
+Responsible for:
+
+* Simulation state management
+* Simulation controls
+* Snapshot generation
+* Action handling
+* Controller state
+* RL state generation
+
+#### `rl_interface.py`
+
+Provides a structured Python interface for RL integration.
+
+Responsible for:
+
+* RL state models
+* RL action models
+* State retrieval
+* Action validation
+* Applying traffic-light actions
+
+---
+
+# 4. Environment Setup
+
+The backend uses Python 3.11.
+
+Create or activate the Conda environment:
+
+```bash
+conda create -n ecotwin-api python=3.11
+conda activate ecotwin-api
+```
+
+Install the required Python packages:
+
+```bash
+pip install -r requirements.txt
 ```
 
 ---
 
-## 3. Project Setup
+# 5. SUMO Setup
 
-Create and activate the Conda environment:
+The backend requires **Eclipse SUMO**.
+
+The backend communicates with SUMO through **TraCI**.
+
+Example SUMO installation:
+
+```text
+C:\Program Files (x86)\Eclipse\Sumo\bin
+```
+
+Verify the installation:
+
+```bash
+sumo --version
+```
+
+The project was developed and tested with:
+
+```text
+Eclipse SUMO 1.27.1
+```
+
+The simulation configuration used by the backend is located in:
+
+```text
+simulation/demo.sumocfg.xml
+```
+
+---
+
+# 6. Running the Backend
+
+Navigate to the backend directory:
+
+```bash
+cd C:\EcoTwin-City-Traffic\backend
+```
+
+Activate the environment:
 
 ```bash
 conda activate ecotwin-api
 ```
 
-Start the FastAPI development server from the `backend` directory:
+Start the FastAPI server:
 
 ```bash
 uvicorn main:app --reload
 ```
 
-The backend runs at:
+The backend will run at:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-Interactive API documentation:
+FastAPI documentation is available at:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
-The React frontend runs separately using Vite:
+---
 
-```bash
-npm install
-npm run dev
-```
+# 7. API Endpoints
 
-The frontend is available at:
+The backend currently provides the following endpoints.
 
-```text
-http://localhost:5173/
-```
+| Method    | Endpoint                           | Purpose                        |
+| --------- | ---------------------------------- | ------------------------------ |
+| GET       | `/health`                          | Backend health check           |
+| GET       | `/api/simulation/status`           | Current simulation status      |
+| GET       | `/api/simulation/state`            | Current simulation snapshot    |
+| POST      | `/api/simulation/pause`            | Pause simulation               |
+| POST      | `/api/simulation/resume`           | Resume simulation              |
+| POST      | `/api/simulation/step`             | Advance simulation manually    |
+| POST      | `/api/simulation/action`           | Apply traffic-light action     |
+| GET       | `/api/simulation/controller-state` | Get controller state           |
+| WebSocket | `/ws/traffic`                      | Stream live simulation updates |
 
 ---
 
-## 4. API Endpoints
+# 8. Health Check
 
-### 4.1 Health Check
+### Endpoint
 
 ```text
 GET /health
 ```
 
-Checks whether the backend is running.
-
-Example response:
+### Example response
 
 ```json
 {
@@ -142,37 +253,226 @@ Example response:
 }
 ```
 
+This endpoint is used to verify that the FastAPI backend is running.
+
 ---
 
-### 4.2 Get Current Simulation State
+# 9. Simulation Status
+
+### Endpoint
+
+```text
+GET /api/simulation/status
+```
+
+Returns the current backend simulation status.
+
+Example:
+
+```json
+{
+  "running": true,
+  "paused": false,
+  "websocket_connections": 0
+}
+```
+
+The endpoint provides information about:
+
+* Whether SUMO is running
+* Whether the simulation is paused
+* Number of connected WebSocket clients
+
+---
+
+# 10. Simulation State
+
+### Endpoint
 
 ```text
 GET /api/simulation/state
 ```
 
-Returns one snapshot of the current SUMO simulation state.
+Returns the current simulation snapshot.
 
-The endpoint:
+The response contains:
 
-1. Starts the SUMO simulation through TraCI.
-2. Advances the simulation.
-3. Collects vehicle information.
-4. Collects traffic-light information.
-5. Collects emission information.
-6. Calculates basic metrics.
-7. Validates the data using the Pydantic model.
-8. Returns the structured simulation state.
-9. Closes the SUMO connection.
+```text
+timestamp
+vehicles
+traffic_lights
+emissions
+metrics
+```
 
 Example structure:
 
 ```json
 {
   "type": "simulation_update",
-  "timestamp": 1.0,
+  "timestamp": 88.5,
+  "vehicles": [],
+  "traffic_lights": [],
+  "emissions": [],
+  "metrics": {
+    "total_co2": 56705.99,
+    "average_wait_time": 15.01,
+    "vehicle_count": 33
+  }
+}
+```
+
+The actual response contains the current vehicles, traffic lights, emissions, and metrics from SUMO.
+
+---
+
+# 11. Simulation Controls
+
+The backend provides direct controls for the running simulation.
+
+## Pause
+
+```text
+POST /api/simulation/pause
+```
+
+Pauses the simulation.
+
+## Resume
+
+```text
+POST /api/simulation/resume
+```
+
+Resumes the simulation.
+
+## Manual Step
+
+```text
+POST /api/simulation/step
+```
+
+Advances the simulation manually by one simulation step.
+
+These controls allow the backend and dashboard to control simulation execution without directly interacting with SUMO.
+
+---
+
+# 12. Traffic-Light Control
+
+The backend provides an API for changing traffic-light phases.
+
+### Endpoint
+
+```text
+POST /api/simulation/action
+```
+
+Example request:
+
+```json
+{
+  "traffic_light_id": "A1",
+  "action": 0
+}
+```
+
+The backend validates the traffic-light ID and action before sending the command to SUMO.
+
+Traffic-light phase control is handled through TraCI.
+
+---
+
+# 13. Action Validation
+
+The backend validates incoming traffic-light actions.
+
+Invalid actions are rejected.
+
+For example, a negative action:
+
+```json
+{
+  "traffic_light_id": "A1",
+  "action": -1
+}
+```
+
+returns an error:
+
+```json
+{
+  "detail": "Action must be a non-negative integer."
+}
+```
+
+An unknown traffic-light ID is also rejected:
+
+```json
+{
+  "detail": "Traffic light 'XYZ' not found."
+}
+```
+
+This prevents invalid commands from reaching the simulation.
+
+---
+
+# 14. Controller State
+
+### Endpoint
+
+```text
+GET /api/simulation/controller-state
+```
+
+Provides the current state maintained by the simulation controller.
+
+The controller separates API-level requests from the underlying SUMO/TraCI implementation.
+
+---
+
+# 15. WebSocket Live Streaming
+
+The backend provides real-time simulation updates through:
+
+```text
+WS /ws/traffic
+```
+
+Instead of repeatedly polling the REST API, a client can maintain a WebSocket connection and continuously receive simulation updates.
+
+### Data Flow
+
+```text
+SUMO
+  ↓
+TraCI
+  ↓
+SimulationService
+  ↓
+SimulationController
+  ↓
+WebSocket
+  ↓
+Client
+```
+
+This is useful for the live traffic dashboard.
+
+---
+
+# 16. WebSocket Message Structure
+
+A WebSocket update follows the `SimulationUpdate` structure.
+
+```json
+{
+  "type": "simulation_update",
+  "timestamp": 12.4,
   "vehicles": [
     {
-      "id": "westbound.0",
+      "id": "vehicle_1",
       "x": 4.8,
       "y": 11.5,
       "speed": 13.89,
@@ -190,145 +490,316 @@ Example structure:
     {
       "x": 4.8,
       "y": 11.5,
-      "co2": 2058.8563
+      "co2": 2058.85
     }
   ],
   "metrics": {
-    "total_co2": 2058.8563,
+    "total_co2": 2058.85,
     "average_wait_time": 0.0,
     "vehicle_count": 1
   }
 }
 ```
 
-The endpoint provides a **single simulation snapshot**, unlike the WebSocket which continuously streams updates.
+---
+
+# 17. Vehicle Data
+
+The backend collects vehicle-level information from SUMO.
+
+Each vehicle can contain:
+
+```text
+id
+x
+y
+speed
+waiting_time
+```
+
+### Meaning
+
+| Field          | Description                    |
+| -------------- | ------------------------------ |
+| `id`           | Unique vehicle identifier      |
+| `x`            | X-coordinate in the simulation |
+| `y`            | Y-coordinate in the simulation |
+| `speed`        | Current vehicle speed          |
+| `waiting_time` | Vehicle waiting time           |
 
 ---
 
-## 5. WebSocket
+# 18. Traffic-Light Data
 
-### 5.1 Traffic WebSocket
+The backend collects traffic-light information from SUMO.
+
+Each traffic light provides:
 
 ```text
-WS /ws/traffic
+id
+state
+phase
 ```
 
-The WebSocket continuously streams live simulation updates from SUMO to the React dashboard.
+Example:
+
+```json
+{
+  "id": "A1",
+  "state": "GGggrrrrGGGg",
+  "phase": 0
+}
+```
+
+The backend can also retrieve the incoming lanes controlled by each traffic light.
+
+---
+
+# 19. CO₂ Emission Data
+
+The backend collects CO₂ emissions directly from SUMO using TraCI.
+
+Emission data is associated with vehicle positions:
 
 ```text
-SUMO
-  │
-  ↓
+x
+y
+co2
+```
+
+The backend also calculates total CO₂ emissions across the simulation.
+
+Example:
+
+```json
+{
+  "total_co2": 6456.956
+}
+```
+
+---
+
+# 20. Simulation Metrics
+
+The backend provides simulation-level metrics including:
+
+```text
+total_co2
+average_wait_time
+vehicle_count
+```
+
+These metrics provide a high-level view of the current traffic simulation.
+
+---
+
+# 21. Lane-Level Metrics
+
+The backend also provides detailed lane-level metrics for RL state generation.
+
+For each lane:
+
+```text
+vehicle_count
+queue
+avg_speed
+waiting_time
+co2
+```
+
+Example:
+
+```json
+{
+  "vehicle_count": 5,
+  "queue": 2,
+  "avg_speed": 3.2,
+  "waiting_time": 18.5,
+  "co2": 420.5
+}
+```
+
+### Queue Definition
+
+The current queue metric represents the number of vehicles travelling at or below:
+
+```text
+0.1 m/s
+```
+
+This provides an approximate count of stopped vehicles.
+
+---
+
+# 22. Pydantic Validation
+
+Pydantic models are used to validate structured backend data.
+
+The backend uses validation for:
+
+* Simulation data
+* RL state
+* RL actions
+* Lane metrics
+* Traffic-light state
+
+This ensures that data passed between backend components follows a defined structure.
+
+---
+
+# 23. RL Interface
+
+The backend includes a direct Python interface for reinforcement-learning integration.
+
+The interface is implemented in:
+
+```text
+rl_interface.py
+```
+
+It provides two main operations:
+
+```python
+get_state()
+apply_action()
+```
+
+The interface communicates directly with `SimulationController`.
+
+```text
+RL Component
+     ↕
+RLInterface
+     ↕
+SimulationController
+     ↕
+SimulationService
+     ↕
 TraCI
-  │
-  ↓
-SimulationService
-  │
-  ↓
-FastAPI WebSocket
-  │
-  ├── Update 1
-  ├── Update 2
-  ├── Update 3
-  ├── Update 4
-  └── ...
-  │
-  ↓
-React Dashboard
+     ↕
+SUMO
 ```
 
-Each update contains:
-
-* Simulation timestamp
-* Vehicle information
-* Traffic-light information
-* Emission information
-* Overall simulation metrics
-
-The WebSocket currently uses a controlled broadcast frequency rather than sending data blindly on every internal SUMO step.
+The RL interface does not require an additional HTTP endpoint because it is implemented as a direct Python interface.
 
 ---
 
-## 6. SUMO and TraCI Integration
+# 24. RL State
 
-The backend has been connected to the real Eclipse SUMO simulation using TraCI.
+The backend provides a structured `RLState`.
 
-SUMO configuration:
+The state contains:
 
 ```text
-simulation/demo.sumocfg.xml
+timestamp
+traffic_lights
 ```
-
-The backend's `SimulationService` is responsible for starting and closing the SUMO/TraCI connection.
-
-The service also contains the SUMO data-collection methods so that SUMO-specific logic is not placed directly inside `main.py`.
-
-### SimulationService responsibilities
-
-```text
-SimulationService
-│
-├── start()
-│   └── Start SUMO through TraCI
-│
-├── get_vehicles()
-│   ├── Vehicle ID
-│   ├── X coordinate
-│   ├── Y coordinate
-│   ├── Speed
-│   └── Waiting time
-│
-├── get_traffic_lights()
-│   ├── Traffic-light ID
-│   ├── Signal state
-│   └── Current phase
-│
-├── get_emissions()
-│   ├── X coordinate
-│   ├── Y coordinate
-│   └── CO₂ emission
-│
-└── stop()
-    └── Close TraCI connection
-```
-
-The backend has been tested successfully with the real SUMO simulation.
-
----
-
-## 7. Vehicle Data
-
-The backend collects live vehicle information directly from SUMO.
-
-Each vehicle contains:
-
-| Field          | Type   | Description            |
-| -------------- | ------ | ---------------------- |
-| `id`           | string | Unique SUMO vehicle ID |
-| `x`            | float  | SUMO X coordinate      |
-| `y`            | float  | SUMO Y coordinate      |
-| `speed`        | float  | Vehicle speed          |
-| `waiting_time` | float  | Vehicle waiting time   |
-
-The vehicle coordinates are streamed through the WebSocket and rendered by the React dashboard.
-
-The dashboard has been verified to show **vehicles moving according to the live SUMO simulation**.
-
----
-
-## 8. Traffic-Light Data
-
-The backend collects traffic-light information directly from SUMO.
 
 Each traffic light contains:
 
-| Field   | Type    | Description                    |
-| ------- | ------- | ------------------------------ |
-| `id`    | string  | SUMO traffic-light ID          |
-| `state` | string  | Current red/yellow/green state |
-| `phase` | integer | Current active phase index     |
+```text
+phase
+lanes
+```
 
-The current SUMO demo contains traffic-light controllers including:
+Each lane contains:
+
+```text
+vehicle_count
+queue
+avg_speed
+waiting_time
+co2
+```
+
+Example:
+
+```json
+{
+  "timestamp": 12.4,
+  "traffic_lights": {
+    "A1": {
+      "phase": 2,
+      "lanes": {
+        "lane_1": {
+          "vehicle_count": 5,
+          "queue": 2,
+          "avg_speed": 3.2,
+          "waiting_time": 18.5,
+          "co2": 420.5
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
+# 25. RL Action
+
+The backend defines the following traffic-light action representation:
+
+```text
+0 → Keep current phase
+1 → Switch to next phase
+```
+
+Example:
+
+```json
+{
+  "actions": {
+    "A1": 1,
+    "B0": 0,
+    "B1": 1,
+    "B2": 0,
+    "C1": 0
+  }
+}
+```
+
+The interface validates that every action is either `0` or `1`.
+
+---
+
+# 26. Multiple Traffic-Light Actions
+
+The backend supports applying actions to multiple traffic lights in a single RL action object.
+
+Example:
+
+```text
+A1 → Switch
+B0 → Keep
+B1 → Switch
+B2 → Keep
+C1 → Keep
+```
+
+This allows the RL interface to control multiple traffic-light controllers through a single structured action.
+
+---
+
+# 27. Dynamic Traffic-Light and Lane Discovery
+
+The backend does not hard-code the lane structure for RL state generation.
+
+Traffic-light IDs are discovered from SUMO:
+
+```python
+traci.trafficlight.getIDList()
+```
+
+Controlled lanes are obtained using:
+
+```python
+traci.trafficlight.getControlledLinks()
+```
+
+This allows the backend to construct lane-level state information from the active SUMO network.
+
+Example traffic lights in the demo network:
 
 ```text
 A1
@@ -338,515 +809,254 @@ B2
 C1
 ```
 
-The `state` represents the current signal state of the controlled links.
+---
 
-The `phase` represents the active traffic-light program phase.
+# 28. Simulation Service
 
-Traffic-light data is continuously streamed to the frontend.
+`SimulationService` isolates SUMO-specific operations from the API layer.
+
+The service is responsible for:
+
+```text
+Start SUMO
+    ↓
+Connect through TraCI
+    ↓
+Advance simulation
+    ↓
+Collect simulation data
+    ↓
+Control traffic lights
+    ↓
+Provide data to controller
+```
+
+This separation keeps SUMO and TraCI logic out of the FastAPI route definitions.
 
 ---
 
-## 9. Emission / CO₂ Data
+# 29. Simulation Controller
 
-The backend collects CO₂ emission information from SUMO using TraCI.
+`SimulationController` provides the application-level control layer.
 
-Each emission entry contains:
+Its responsibilities include:
 
-| Field | Type  | Description                    |
-| ----- | ----- | ------------------------------ |
-| `x`   | float | Emission location X coordinate |
-| `y`   | float | Emission location Y coordinate |
-| `co2` | float | CO₂ emission value             |
+* Calling simulation service methods
+* Generating simulation snapshots
+* Handling simulation controls
+* Handling traffic-light actions
+* Generating RL state
+* Maintaining separation between API and simulation logic
 
-The emission coordinates and values are streamed through the WebSocket.
+Architecture:
 
-The React dashboard consumes this information for the current emission visualization and future pollution heatmap.
+```text
+FastAPI
+   ↓
+SimulationController
+   ↓
+SimulationService
+   ↓
+TraCI
+   ↓
+SUMO
+```
 
 ---
 
-## 10. Simulation Metrics
+# 30. Error Handling
 
-The backend calculates basic simulation metrics from the live SUMO state.
+The backend validates important operations before executing them.
 
-| Metric              | Description                                      |
-| ------------------- | ------------------------------------------------ |
-| `total_co2`         | Sum of CO₂ values from the current emission data |
-| `average_wait_time` | Average waiting time of active vehicles          |
-| `vehicle_count`     | Number of currently active vehicles              |
-| `timestamp`         | Current SUMO simulation time                     |
+Examples include:
+
+* Simulation not running
+* Invalid traffic-light ID
+* Invalid action value
+* Invalid simulation control request
 
 Example:
 
-```json
-{
-  "metrics": {
-    "total_co2": 6456.9560,
-    "average_wait_time": 0.0,
-    "vehicle_count": 5
-  }
-}
+```text
+Traffic light 'XYZ' not found.
 ```
 
-These metrics are included in every WebSocket simulation update.
+The API converts backend validation errors into appropriate HTTP error responses.
 
 ---
 
-## 11. Controlled Simulation Loop
+# 31. CORS
 
-The WebSocket does not simply broadcast data without controlling the simulation loop.
+The backend includes CORS configuration for local frontend development.
 
-The current flow is:
+The React development server is allowed to communicate with the FastAPI backend.
+
+Current development origin:
 
 ```text
-1. Advance SUMO
-        ↓
-2. Read simulation time
-        ↓
-3. Collect vehicles
-        ↓
-4. Collect traffic lights
-        ↓
-5. Collect emissions
-        ↓
-6. Calculate metrics
-        ↓
-7. Validate SimulationUpdate
-        ↓
-8. Broadcast through WebSocket
-        ↓
-9. Continue simulation
+http://localhost:5173
 ```
-
-This keeps SUMO simulation advancement and data broadcasting coordinated.
 
 ---
 
-## 12. WebSocket Update-Frequency Benchmark
+# 32. Backend Testing
 
-The WebSocket update frequency was benchmarked to avoid blindly sending data on every internal SUMO simulation step.
+The backend has been tested across multiple layers.
 
-The current configuration uses a **0.2-second simulation/update interval**.
+### API Testing
 
-A benchmark at this configuration produced approximately:
+Verified:
 
-```text
-Simulation step:     0.2 seconds
-Messages/second:     ~3.24
-```
+* Health endpoint
+* Simulation status
+* Simulation state
+* Pause
+* Resume
+* Manual simulation step
+* Traffic-light actions
+* Controller state
+* Invalid actions
+* Unknown traffic-light IDs
 
-This provides a controlled real-time stream to the React dashboard while reducing unnecessary frontend updates compared with broadcasting every internal simulation step.
+### WebSocket Testing
 
-The update frequency can be adjusted later depending on frontend performance and the requirements of the RL integration.
+Verified:
 
-
----
-
-## 13. Pydantic Data Contract
-
-The backend validates outgoing simulation data using Pydantic models.
-
-The WebSocket payload follows the structure:
-
-```json
-{
-  "type": "simulation_update",
-  "timestamp": 145.2,
-  "vehicles": [
-    {
-      "id": "veh_001",
-      "x": 152.4,
-      "y": 89.1,
-      "speed": 8.3,
-      "waiting_time": 2.4
-    }
-  ],
-  "traffic_lights": [
-    {
-      "id": "J1",
-      "state": "G",
-      "phase": 2
-    }
-  ],
-  "emissions": [
-    {
-      "x": 150.0,
-      "y": 90.0,
-      "co2": 82.4
-    }
-  ],
-  "metrics": {
-    "total_co2": 1245.6,
-    "average_wait_time": 28.4,
-    "vehicle_count": 84
-  }
-}
-```
-
-This contract is shared between the backend and frontend.
-
----
-
-## 14. Frontend Integration
-
-The React dashboard connects to:
-
-```text
-ws://127.0.0.1:8000/ws/traffic
-```
-
-The frontend WebSocket service:
-
-1. Opens the WebSocket connection.
-2. Receives JSON messages.
-3. Parses the messages.
-4. Normalizes the backend field names.
-5. Updates the React state.
-6. Updates the dashboard metrics.
-7. Updates the map.
-8. Updates the analytics chart.
-9. Updates the vehicle table.
-
-The frontend normalizes:
-
-```text
-Backend:
-traffic_lights
-
-        ↓
-
-Frontend:
-trafficLights
-```
-
-The live dashboard has been successfully tested with the real SUMO backend.
-
-The dashboard currently displays:
-
-* Live connection status
-* Active vehicle count
-* Total CO₂
-* Average waiting time
-* Traffic status
-* Simulation time
-* Moving vehicles
-* Traffic lights
-* Emission data
-* Vehicle table
-* Simulation analytics
-
----
-
-## 15. React Live Simulation Flow
-
-The complete currently working flow is:
-
-```text
-┌─────────────┐
-│    SUMO     │
-└──────┬──────┘
-       │
-       │ TraCI
-       ↓
-┌─────────────────────┐
-│ SimulationService   │
-│                     │
-│ Vehicles            │
-│ Traffic Lights      │
-│ Emissions           │
-└──────────┬──────────┘
-           │
-           ↓
-┌─────────────────────┐
-│      FastAPI        │
-│                     │
-│ /api/simulation/    │
-│ state               │
-│                     │
-│ /ws/traffic         │
-└──────────┬──────────┘
-           │
-           │ WebSocket
-           ↓
-┌─────────────────────┐
-│   React Dashboard   │
-│                     │
-│ Moving vehicles     │
-│ CO₂ metrics         │
-│ Traffic lights      │
-│ Analytics           │
-└─────────────────────┘
-```
-
-This complete path has been verified with real simulation data.
-
----
-
-## 16. CORS
-
-Development CORS is configured so the React frontend can communicate with FastAPI.
-
-Current development configuration:
-
-```python
-allow_origins=["*"]
-```
-
-For production, this should be restricted to the actual frontend origin.
-
----
-
-## 17. Current Development Flow
-
-The previous mock-only architecture:
-
-```text
-mock_sumo.py
-      ↓
-FastAPI
-      ↓
-React
-```
-
-has now been replaced for the main simulation path by:
-
-```text
-SUMO
-  ↓
-TraCI
-  ↓
-SimulationService
-  ↓
-FastAPI
-  ↓
-WebSocket
-  ↓
-React Dashboard
-```
-
-Mock data may still exist in the project for development/testing purposes, but the live dashboard is now receiving **real SUMO/TraCI data**.
-
----
-
-## 18. Planned RL Integration
-
-The RL component is not owned by the Data API member.
-
-The planned communication flow is:
-
-```text
-                 SUMO
-                  │
-                  ↕
-                TraCI
-                  │
-                  ↓
-           FastAPI Backend
-             ↙          ↘
-          State          React
-            ↓
-            RL
-        Algorithm
-            │
-          Action
-            ↓
-        FastAPI
-            │
-            ↓
-           SUMO
-```
-
-Expected future interaction:
-
-1. SUMO generates the current traffic state.
-2. Backend collects the simulation state.
-3. Backend exposes the relevant state to the RL component.
-4. RL processes the state.
-5. RL produces a traffic-light action.
-6. Backend receives the action.
-7. Backend applies the action to SUMO through the appropriate interface.
-8. SUMO advances with the updated traffic-light control.
-9. Backend collects the new simulation state.
-10. Backend streams the updated state to React.
-
-The exact RL ↔ backend communication mechanism still needs to be coordinated with the RL member.
-
-The backend should provide a clean interface without coupling the API implementation directly to the RL algorithm.
-
----
-
-## 19. Development Status
-
-### Completed
-
-* [x] Project setup
-* [x] FastAPI server
-* [x] Health endpoint
-* [x] Simulation data contract
-* [x] Pydantic schemas
-* [x] Mock simulation data
-* [x] REST simulation state endpoint
-* [x] WebSocket data streaming
-* [x] Development CORS configuration
-* [x] API documentation
-* [x] Real SUMO integration
-* [x] TraCI connection
-* [x] `SimulationService`
-* [x] Real vehicle data collection
-* [x] Vehicle coordinates
-* [x] Vehicle speed
-* [x] Vehicle waiting time
-* [x] Traffic-light data collection
-* [x] Traffic-light state
-* [x] Traffic-light phase
-* [x] CO₂ emission collection
-* [x] CO₂ location data
-* [x] Total CO₂ metric
-* [x] Average waiting-time metric
-* [x] Vehicle-count metric
-* [x] Simulation timestamp
-* [x] Controlled SUMO simulation loop
-* [x] WebSocket update-frequency benchmarking
-* [x] Live vehicle coordinate streaming
-* [x] Live traffic-light streaming
-* [x] Live emission streaming
-* [x] React WebSocket integration
-* [x] Live React dashboard
-* [x] Moving vehicles rendered from real SUMO coordinates
-* [x] Live simulation metrics displayed in React
-* [x] End-to-end SUMO → TraCI → FastAPI → WebSocket → React testing
-* [x] Basic connection/disconnection handling
-* [x] Minimal multiple-client WebSocket behavior testing
-
-### Remaining / Next Stage
-
-* [ ] Finalize RL ↔ Backend communication interface
-* [ ] Backend RL action handling
-* [ ] Apply RL traffic-light actions to SUMO
-* [ ] Complete SUMO ↔ Backend ↔ RL closed loop
-* [ ] Production WebSocket connection management
-* [ ] Production CORS configuration
-* [ ] Extended error handling and reconnection strategy
-
----
-
-## 20. Important Current Limitation
-
-The backend currently starts a SUMO/TraCI connection for the simulation stream.
-
-TraCI uses a single default connection in the current implementation.
-
-Therefore, multiple simultaneous WebSocket clients require additional connection/session management before being considered fully supported.
-
-The current single-client flow has been verified successfully:
-
-```text
-SUMO
-  ↓
-TraCI
-  ↓
-FastAPI
-  ↓
-WebSocket
-  ↓
-React
-  ↓
-Live moving vehicles
-```
-
-Multiple-client behavior remains a testing item before declaring the WebSocket layer fully multi-client capable.
-
----
-
-## 21. Mid-Project Demonstration
-
-The backend can now demonstrate the complete real-data path:
-
-1. Start the SUMO simulation.
-2. Start FastAPI.
-3. Verify `/health`.
-4. Open `/api/simulation/state`.
-5. Show real SUMO vehicle data.
-6. Show real traffic-light data.
-7. Show real CO₂ data.
-8. Connect to `/ws/traffic`.
-9. Show live JSON updates changing as SUMO advances.
-10. Show vehicle coordinates changing over time.
-11. Open the React dashboard.
-12. Demonstrate vehicles moving using streamed SUMO coordinates.
-13. Demonstrate live CO₂ and simulation metrics.
-14. Demonstrate traffic-light information.
-15. Explain that the same communication layer will later carry RL-controlled traffic-light actions.
-
----
-
-## 22. What This Member Owns
-
-The Data API member owns:
-
-* FastAPI backend
-* Data contracts
-* Pydantic validation
-* SUMO/TraCI data collection
-* Simulation data service
-* REST API
-* WebSocket streaming
-* Backend/frontend communication
-* Backend/RL communication interface
-* Basic connection handling
+* WebSocket connection
+* Continuous simulation updates
+* Vehicle data
+* Traffic-light data
+* CO₂ data
 * Simulation metrics
+* Client connection/disconnection
 
-The Data API member does **not** own:
+Multiple WebSocket connections were also tested.
 
-* Designing the SUMO road network
-* Designing detailed traffic demand
-* Designing/training PPO or another RL algorithm
-* Building the React map UI
-* Designing vehicle markers
-* Designing the pollution heatmap
-* Designing frontend charts
+### RL Interface Testing
 
-The backend provides clean interfaces for these components to integrate.
+Verified:
+
+* RL state generation
+* Pydantic RL state validation
+* Single traffic-light action
+* Multiple traffic-light actions
+* Keep-current-phase action
+* Switch-to-next-phase action
+* Invalid RL actions
 
 ---
 
-## 23. Final Target
+# 33. Example Backend Data Flow
 
-The Data API layer has progressed from a mock communication layer to a working real-time bridge between the running SUMO simulation and the React dashboard.
-
-The currently demonstrated pipeline is:
+A typical simulation update follows this pipeline:
 
 ```text
-SUMO
- ↓
-TraCI
- ↓
-FastAPI SimulationService
- ↓
-WebSocket
- ↓
-React Dashboard
- ↓
-Live moving vehicles
+SUMO advances simulation
+        ↓
+TraCI reads simulation data
+        ↓
+SimulationService collects:
+    • Vehicles
+    • Traffic lights
+    • CO₂
+    • Metrics
+        ↓
+SimulationController builds state
+        ↓
+FastAPI exposes the data
+        ↓
+ ┌───────────────┬────────────────┐
+ ↓               ↓                ↓
+REST          WebSocket       RLInterface
+ ↓               ↓                ↓
+Snapshot     Live updates     RL State
+                              / Action
 ```
 
-The next major milestone is to extend this bridge to support the RL-controlled simulation loop:
+---
+
+# 34. Backend Development Status
+
+## Backend Development — Completed
+
+The backend development scope for the current project stage has been completed.
+
+The completed backend includes:
+
+* [x] FastAPI backend
+* [x] SUMO/TraCI integration
+* [x] `SimulationService`
+* [x] `SimulationController`
+* [x] Simulation lifecycle controls
+* [x] Pause/resume functionality
+* [x] Manual simulation stepping
+* [x] Vehicle data collection
+* [x] Traffic-light data collection
+* [x] Traffic-light phase control
+* [x] CO₂ emission collection
+* [x] Simulation metrics
+* [x] Lane-level traffic metrics
+* [x] Pydantic data validation
+* [x] REST API layer
+* [x] WebSocket live streaming
+* [x] Multiple WebSocket client testing
+* [x] Traffic-light action validation
+* [x] Error handling
+* [x] RL state representation
+* [x] RL action representation
+* [x] Direct Python `RLInterface`
+* [x] Multi-traffic-light action handling
+* [x] RL state/action validation
+* [x] Backend integration testing
+
+### Final Backend Architecture
 
 ```text
-SUMO
- ↕
-TraCI
- ↕
-FastAPI
- ↕
-RL
- ↕
-FastAPI
- ↕
-SUMO
- ↓
-WebSocket
- ↓
-React Dashboard
+                         SUMO
+                           ↕
+                         TraCI
+                           ↕
+                  SimulationService
+                           ↕
+                 SimulationController
+                           ↕
+                      FastAPI
+                    /     |      \
+                   /      |       \
+                  ↓       ↓        ↓
+               REST   WebSocket  RLInterface
+                 ↓       ↓        ↓
+             Control  Live Data  RL State/Action
 ```
 
-This will complete the communication layer for the full EcoTwin traffic-control system.
+The backend provides the complete simulation communication and control layer required by the EcoTwin application.
+
+---
+
+# 35. Backend Completion Statement
+
+The EcoTwin backend has been implemented as a complete real-time simulation API layer.
+
+It provides:
+
+```text
+Real SUMO Simulation
+        ↓
+      TraCI
+        ↓
+SimulationService
+        ↓
+SimulationController
+        ↓
+     FastAPI
+   ┌────┼─────┐
+   ↓    ↓     ↓
+ REST  WebSocket  RLInterface
+   ↓    ↓     ↓
+Control Live     State/
+       Updates   Actions
+```
+
+The backend has been verified through simulation, API, WebSocket, traffic-light control, validation, and RL-interface testing.
+
+**Backend development is complete for the current project stage.**
