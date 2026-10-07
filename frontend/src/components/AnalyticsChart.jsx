@@ -1,4 +1,5 @@
 import {
+  ResponsiveContainer,
   LineChart,
   Line,
   XAxis,
@@ -6,115 +7,162 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
 } from "recharts";
 
 function AnalyticsChart({ data = [] }) {
+  const hasData = data.length > 0;
+
   return (
-    <div className="analytics-chart">
-      <div className="analytics-header">
+    <section className="analytics-section">
+
+      {/* ================= HEADER ================= */}
+
+      <div className="section-header">
+
         <div>
-          <h3>Simulation Analytics</h3>
+          <h2>Simulation Analytics</h2>
 
           <p>
-            Live CO₂ emissions, waiting time and vehicle count
+            Real-time traffic, waiting time and
+            CO₂ emission trends
           </p>
         </div>
+
+        <div className="analytics-live-status">
+          <span className="analytics-live-dot"></span>
+          Live Analytics
+        </div>
+
       </div>
 
-      {data.length === 0 ? (
-        <div className="chart-empty">
-          <p>Waiting for simulation data...</p>
-        </div>
-      ) : (
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart
-            data={data}
-            margin={{
-              top: 10,
-              right: 30,
-              left: 10,
-              bottom: 10,
-            }}
+
+      {/* ================= CHART ================= */}
+
+      <div className="analytics-chart-container">
+
+        {!hasData ? (
+          <div className="analytics-empty-state">
+
+            <div className="analytics-empty-icon">
+              📊
+            </div>
+
+            <h3>Waiting for simulation data</h3>
+
+            <p>
+              Analytics will appear when the
+              simulation starts sending live data.
+            </p>
+
+          </div>
+        ) : (
+          <ResponsiveContainer
+            width="100%"
+            height={320}
           >
-            <CartesianGrid strokeDasharray="3 3" />
-
-            <XAxis
-              dataKey="time"
-              label={{
-                value: "Simulation Time",
-                position: "insideBottom",
-                offset: -5,
+            <LineChart
+              data={data}
+              margin={{
+                top: 15,
+                right: 25,
+                left: 10,
+                bottom: 20,
               }}
-            />
+            >
 
-            {/* CO₂ axis */}
-            <YAxis
-              yAxisId="co2"
-              label={{
-                value: "Total CO₂",
-                angle: -90,
-                position: "insideLeft",
-              }}
-            />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                opacity={0.25}
+              />
 
-            {/* Waiting-time axis */}
-            <YAxis
-              yAxisId="wait"
-              orientation="right"
-              label={{
-                value: "Wait Time (s)",
-                angle: 90,
-                position: "insideRight",
-              }}
-            />
+              <XAxis
+                dataKey="time"
+                tickFormatter={(value) =>
+                  `${Number(value).toFixed(1)}s`
+                }
+                tick={{ fontSize: 10 }}
+                label={{
+                  value: "Simulation Time",
+                  position: "insideBottom",
+                  offset: -10,
+                  fontSize: 10,
+                }}
+              />
 
-            {/* Vehicle-count axis */}
-            <YAxis
-              yAxisId="vehicles"
-              orientation="right"
-              hide={true}
-            />
+              <YAxis
+                allowDecimals={true}
+                tick={{ fontSize: 10 }}
+              />
 
-            <Tooltip />
-            <Legend />
+              <Tooltip
+                formatter={(value, name) => {
+                  const labels = {
+                    total_co2: "Total CO₂",
+                    average_wait_time:
+                      "Average Wait Time",
+                    vehicle_count:
+                      "Vehicle Count",
+                  };
 
-            {/* Total CO₂ */}
-            <Line
-              yAxisId="co2"
-              type="monotone"
-              dataKey="total_co2"
-              name="Total CO₂"
-              stroke="#ef4444"
-              strokeWidth={2}
-              dot={false}
-            />
+                  return [
+                    Number(value).toFixed(2),
+                    labels[name] || name,
+                  ];
+                }}
+                labelFormatter={(value) =>
+                  `Simulation Time: ${Number(
+                    value
+                  ).toFixed(2)} s`
+                }
+              />
 
-            {/* Average waiting time */}
-            <Line
-              yAxisId="wait"
-              type="monotone"
-              dataKey="average_wait_time"
-              name="Average Wait Time"
-              stroke="#f59e0b"
-              strokeWidth={2}
-              dot={false}
-            />
+              <Legend
+                wrapperStyle={{
+                  fontSize: "10px",
+                  paddingTop: "5px",
+                }}
+              />
 
-            {/* Vehicle count */}
-            <Line
-              yAxisId="vehicles"
-              type="monotone"
-              dataKey="vehicle_count"
-              name="Vehicle Count"
-              stroke="#38bdf8"
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      )}
-    </div>
+              {/* CO₂ */}
+
+              <Line
+                type="monotone"
+                dataKey="total_co2"
+                name="Total CO₂"
+                strokeWidth={3}
+                dot={false}
+                activeDot={{ r: 5 }}
+              />
+
+              {/* Waiting time */}
+
+              <Line
+                type="monotone"
+                dataKey="average_wait_time"
+                name="Average Wait Time"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 5 }}
+              />
+
+              {/* Vehicle count */}
+
+              <Line
+                type="monotone"
+                dataKey="vehicle_count"
+                name="Vehicle Count"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 5 }}
+              />
+
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+
+      </div>
+
+    </section>
   );
 }
 

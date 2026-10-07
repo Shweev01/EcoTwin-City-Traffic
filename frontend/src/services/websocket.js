@@ -1,36 +1,60 @@
 const WS_URL = "ws://127.0.0.1:8000/ws/traffic";
 
-export function connectWebSocket(onMessage, onError, onClose) {
-  const websocket = new WebSocket(WS_URL);
+export function connectWebSocket(onMessage, onStatusChange) {
+  let socket = null;
+  let reconnectTimer = null;
+  let manuallyClosed = false;
 
-  websocket.onopen = () => {
-    console.log("Connected to EcoTwin WebSocket");
+  const connect = () => {
+    socket = new WebSocket(WS_URL);
+
+    socket.onopen = () => {
+      console.log("WebSocket connected");
+      onStatusChange?.("connected");
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        onMessage?.(data);
+      } catch (error) {
+        console.error("WebSocket message parse error:", error);
+      }
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      onStatusChange?.("error");
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket connection closed");
+      onStatusChange?.("disconnected");
+
+      if (!manuallyClosed) {
+        reconnectTimer = setTimeout(connect, 3000);
+      }
+    };
   };
 
-  websocket.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      onMessage(data);
-    } catch (error) {
-      console.error("Invalid WebSocket data:", error);
+  connect();
+
+  // IMPORTANT:
+  // connectWebSocket returns a function.
+  // App.jsx can call this function during cleanup.
+  return () => {
+    manuallyClosed = true;
+
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+    }
+
+    if (
+      socket &&
+      (socket.readyState === WebSocket.OPEN ||
+        socket.readyState === WebSocket.CONNECTING)
+    ) {
+      socket.close();
     }
   };
-
-  websocket.onerror = (error) => {
-    console.error("WebSocket error:", error);
-
-    if (onError) {
-      onError(error);
-    }
-  };
-
-  websocket.onclose = () => {
-    console.log("WebSocket connection closed");
-
-    if (onClose) {
-      onClose();
-    }
-  };
-
-  return websocket;
 }

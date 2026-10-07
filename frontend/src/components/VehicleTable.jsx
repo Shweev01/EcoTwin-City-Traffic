@@ -1,43 +1,76 @@
 function VehicleTable({ vehicles = [] }) {
   const getVehicleStatus = (speed) => {
-    const vehicleSpeed = Number(speed);
+    const numericSpeed = Number(speed) || 0;
 
-    if (vehicleSpeed === 0) {
-      return "Stopped";
+    if (numericSpeed === 0) {
+      return {
+        label: "Stopped",
+        className: "vehicle-status-stopped",
+      };
     }
 
-    if (vehicleSpeed <= 5) {
-      return "Slow";
+    if (numericSpeed < 5) {
+      return {
+        label: "Slow",
+        className: "vehicle-status-slow",
+      };
     }
 
-    return "Moving";
+    return {
+      label: "Moving",
+      className: "vehicle-status-moving",
+    };
   };
 
   return (
-    <div className="vehicle-table-section">
-      <div className="vehicle-table-header">
+    <section className="vehicle-table-section">
+
+      {/* ================= HEADER ================= */}
+
+      <div className="section-header">
+
         <div>
-          <h3>Live Vehicle Data</h3>
-          <p>Real-time vehicle information received from the simulation</p>
+          <h2>Live Vehicle Data</h2>
+
+          <p>
+            Real-time vehicle movement from
+            the simulation
+          </p>
         </div>
 
-        <span className="vehicle-count">
-          {vehicles.length} vehicles
-        </span>
+        <div className="vehicle-live-status">
+          <span className="vehicle-live-dot"></span>
+          {vehicles.length} Active Vehicles
+        </div>
+
       </div>
 
+
+      {/* ================= TABLE ================= */}
+
       {vehicles.length === 0 ? (
-        <div className="vehicle-table-empty">
-          No vehicle data available.
+        <div className="vehicle-empty-state">
+
+          <div className="vehicle-empty-icon">
+            🚗
+          </div>
+
+          <h3>No vehicle data available</h3>
+
+          <p>
+            Vehicle information will appear
+            when the simulation is running.
+          </p>
+
         </div>
       ) : (
         <div className="vehicle-table-wrapper">
+
           <table className="vehicle-table">
+
             <thead>
               <tr>
                 <th>Vehicle ID</th>
-                <th>X</th>
-                <th>Y</th>
                 <th>Speed</th>
                 <th>Waiting Time</th>
                 <th>Status</th>
@@ -45,44 +78,61 @@ function VehicleTable({ vehicles = [] }) {
             </thead>
 
             <tbody>
-              {vehicles.map((vehicle) => {
-                const status = getVehicleStatus(vehicle.speed);
+              {vehicles.map((vehicle, index) => {
+                const speed =
+                  Number(vehicle.speed) || 0;
+
+                const waitingTime =
+                  Number(
+                    vehicle.waiting_time
+                  ) || 0;
+
+                const status =
+                  getVehicleStatus(speed);
 
                 return (
-                  <tr key={vehicle.id}>
-                    <td>{vehicle.id}</td>
+                  <tr
+                    key={
+                      vehicle.id ||
+                      `vehicle-${index}`
+                    }
+                  >
 
                     <td>
-                      {Number(vehicle.x).toFixed(2)}
+                      <strong>
+                        {vehicle.id ||
+                          `Vehicle ${index + 1}`}
+                      </strong>
                     </td>
 
                     <td>
-                      {Number(vehicle.y).toFixed(2)}
+                      {speed.toFixed(2)} m/s
                     </td>
 
                     <td>
-                      {Number(vehicle.speed).toFixed(2)} m/s
-                    </td>
-
-                    <td>
-                      {Number(vehicle.waiting_time).toFixed(2)} s
+                      {waitingTime.toFixed(2)} s
                     </td>
 
                     <td>
                       <span
-                        className={`vehicle-status vehicle-status-${status.toLowerCase()}`}
+                        className={`vehicle-status-badge ${status.className}`}
                       >
-                        {status}
+                        <span className="vehicle-status-dot"></span>
+                        {status.label}
                       </span>
                     </td>
+
                   </tr>
                 );
               })}
             </tbody>
+
           </table>
+
         </div>
       )}
-    </div>
+
+    </section>
   );
 }
 

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<routes>
+
+    <!-- ================= VEHICLE TYPES ================= -->
+
+    <vType
+        id="car"
+        vClass="passenger"
+        accel="2.6"
+        decel="4.5"
+        sigma="0.5"
+        length="5"
+        maxSpeed="13.89"
+    />
+
+    <vType
+        id="bus"
+        vClass="bus"
+        accel="1.2"
+        decel="4.0"
+        sigma="0.5"
+        length="12"
+        maxSpeed="10"
+    />
+
+    <vType
+        id="truck"
+        vClass="truck"
+        accel="1.0"
+        decel="3.5"
+        sigma="0.5"
+        length="12"
+        maxSpeed="8"
+    />
+
+
+    <!-- ================= ROUTES ================= -->
+
+    <!-- Horizontal -->
+
+    <route id="east_west" edges="A0A1 A1A2"/>
+    <route id="west_east" edges="A2A1 A1A0"/>
+
+    <route id="middle_east_west" edges="B0B1 B1B2"/>
+    <route id="middle_west_east" edges="B2B1 B1B0"/>
+
+
+    <!-- Vertical -->
+
+    <route id="north_south" edges="A0B0 B0C0"/>
+    <route id="south_north" edges="C0B0 B0A0"/>
+
+    <route id="middle_north_south" edges="A1B1 B1C1"/>
+    <route id="middle_south_north" edges="C1B1 B1A1"/>
+
+
+    <!-- Cross-city -->
+
+    <route
+        id="cross_city_1"
+        edges="A0A1 A1B1 B1B2"
+    />
+
+    <route
+        id="cross_city_2"
+        edges="C2C1 C1B1 B1A1"
+    />
+
+
+    <!-- ================= TRAFFIC FLOW ================= -->
+
+    <!-- Cars: 0-50 seconds -->
+
+    <flow
+        id="car_flow_01"
+        type="car"
+        route="east_west"
+        begin="0"
+        end="300"
+        period="12"
+    />
+
+    <flow
+        id="car_flow_02"
+        type="car"
+        route="west_east"
+        begin="5"
+        end="300"
+        period="15"
+    />
+
+    <flow
+        id="car_flow_03"
+        type="car"
+        route="middle_east_west"
+        begin="10"
+        end="300"
+        period="13"
+    />
+
+    <flow
+        id="car_flow_04"
+        type="car"
+        route="middle_west_east"
+        begin="15"
+        end="300"
+        period="16"
+    />
+
+    <flow
+        id="car_flow_05"
+        type="car"
+        route="north_south"
+        begin="20"
+        end="300"
+        period="14"
+    />
+
+    <flow
+        id="car_flow_06"
+        type="car"
+        route="south_north"
+        begin="25"
+        end="300"
+        period="17"
+    />
+
+    <flow
+        id="car_flow_07"
+        type="car"
+        route="middle_north_south"
+        begin="30"
+        end="300"
+        period="12"
+    />
+
+    <flow
+        id="car_flow_08"
+        type="car"
+        route="middle_south_north"
+        begin="35"
+        end="300"
+        period="15"
+    />
+
+    <flow
+        id="car_flow_09"
+        type="car"
+        route="cross_city_1"
+        begin="40"
+        end="300"
+        period="18"
+    />
+
+    <flow
+        id="car_flow_10"
+        type="car"
+        route="cross_city_2"
+        begin="45"
+        end="300"
+        period="19"
+    />
+
+
+    <!-- ================= BUSES ================= -->
+
+    <flow
+        id="bus_flow_01"
+        type="bus"
+        route="east_west"
+        begin="20"
+        end="300"
+        period="35"
+    />
+
+    <flow
+        id="bus_flow_02"
+        type="bus"
+        route="middle_west_east"
+        begin="30"
+        end="300"
+        period="40"
+    />
+
+    <flow
+        id="bus_flow_03"
+        type="bus"
+        route="north_south"
+        begin="40"
+        end="300"
+        period="45"
+    />
+
+
+    <!-- ================= TRUCKS ================= -->
+
+    <flow
+        id="truck_flow_01"
+        type="truck"
+        route="north_south"
+        begin="30"
+        end="300"
+        period="40"
+    />
+
+    <flow
+        id="truck_flow_02"
+        type="truck"
+        route="middle_south_north"
+        begin="50"
+        end="300"
+        period="45"
+    />
+
+</routes>
