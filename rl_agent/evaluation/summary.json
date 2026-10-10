@@ -1,0 +1,123 @@
+{
+  "episodes": 5,
+  "runs": [
+    {
+      "mode": "baseline",
+      "seed": 101,
+      "average_wait_time_s": 16.159192825112104,
+      "total_co2_mg": 44313944.320955865,
+      "average_queue_vehicles_per_lane": 0.7770833333333333,
+      "throughput_vehicles": 176,
+      "episode_reward": -8.019579282307316,
+      "simulated_seconds": 300.0
+    },
+    {
+      "mode": "ppo",
+      "seed": 101,
+      "average_wait_time_s": 10.478318584070799,
+      "total_co2_mg": 43204152.72837529,
+      "average_queue_vehicles_per_lane": 0.45208333333333334,
+      "throughput_vehicles": 171,
+      "episode_reward": -5.818520339411213,
+      "simulated_seconds": 300.0
+    },
+    {
+      "mode": "baseline",
+      "seed": 102,
+      "average_wait_time_s": 14.351982378854624,
+      "total_co2_mg": 44247548.16364131,
+      "average_queue_vehicles_per_lane": 0.7052083333333333,
+      "throughput_vehicles": 186,
+      "episode_reward": -7.741165922794829,
+      "simulated_seconds": 300.0
+    },
+    {
+      "mode": "ppo",
+      "seed": 102,
+      "average_wait_time_s": 11.329910714285713,
+      "total_co2_mg": 43470170.12661147,
+      "average_queue_vehicles_per_lane": 0.49270833333333336,
+      "throughput_vehicles": 172,
+      "episode_reward": -5.920990211780235,
+      "simulated_seconds": 300.0
+    },
+    {
+      "mode": "baseline",
+      "seed": 103,
+      "average_wait_time_s": 16.669058295964124,
+      "total_co2_mg": 44494246.94677929,
+      "average_queue_vehicles_per_lane": 0.7989583333333333,
+      "throughput_vehicles": 176,
+      "episode_reward": -8.144729893102191,
+      "simulated_seconds": 300.0
+    },
+    {
+      "mode": "ppo",
+      "seed": 103,
+      "average_wait_time_s": 9.273568281938326,
+      "total_co2_mg": 42557278.744945794,
+      "average_queue_vehicles_per_lane": 0.3885416666666667,
+      "throughput_vehicles": 177,
+      "episode_reward": -5.668335528061002,
+      "simulated_seconds": 300.0
+    },
+    {
+      "mode": "baseline",
+      "seed": 104,
+      "average_wait_time_s": 16.647085201793722,
+      "total_co2_mg": 44384522.08408338,
+      "average_queue_vehicles_per_lane": 0.7989583333333333,
+      "throughput_vehicles": 175,
+      "episode_reward": -8.18441229102762,
+      "simulated_seconds": 300.0
+    },
+    {
+      "mode": "ppo",
+      "seed": 104,
+      "average_wait_time_s": 9.490748898678415,
+      "total_co2_mg": 42413388.74358935,
+      "average_queue_vehicles_per_lane": 0.4010416666666667,
+      "throughput_vehicles": 177,
+      "episode_reward": -5.6035692618205335,
+      "simulated_seconds": 300.0
+    },
+    {
+      "mode": "baseline",
+      "seed": 105,
+      "average_wait_time_s": 14.586343612334801,
+      "total_co2_mg": 44237916.440600716,
+      "average_queue_vehicles_per_lane": 0.7125,
+      "throughput_vehicles": 185,
+      "episode_reward": -7.7188932769557175,
+      "simulated_seconds": 300.0
+    },
+    {
+      "mode": "ppo",
+      "seed": 105,
+      "average_wait_time_s": 17.03409090909091,
+      "total_co2_mg": 45648940.617627725,
+      "average_queue_vehicles_per_lane": 0.7541666666666667,
+      "throughput_vehicles": 161,
+      "episode_reward": -7.347779391245082,
+      "simulated_seconds": 300.0
+    }
+  ],
+  "mean": {
+    "baseline": {
+      "average_wait_time_s": 15.682732462811876,
+      "total_co2_mg": 44335635.59121211,
+      "average_queue_vehicles_per_lane": 0.7585416666666667,
+      "throughput_vehicles": 179.6,
+      "episode_reward": -7.961756133237534,
+      "simulated_seconds": 300.0
+    },
+    "ppo": {
+      "average_wait_time_s": 11.521327477612832,
+      "total_co2_mg": 43458786.19222993,
+      "average_queue_vehicles_per_lane": 0.49770833333333336,
+      "throughput_vehicles": 171.6,
+      "episode_reward": -6.071838946463613,
+      "simulated_seconds": 300.0
+    }
+  }
+}
